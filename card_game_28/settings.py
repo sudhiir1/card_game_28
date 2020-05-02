@@ -25,7 +25,7 @@ SECRET_KEY = 'yahjilokwo#htb!44#1-fxin*2@rwv7!(p&eiiv4bzsq&!)6ke'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'game_table',
 ]
 
 MIDDLEWARE = [
