@@ -1,1 +1,65 @@
-<h1> Hello, welcome to the Card 28 game...</h1>
+<html>
+  <head>
+    <title>CardGame28</title>
+    <style> 
+      div.new_msg{ 
+      background-color: darkgray; 
+      float:left;
+      border:1px balck;
+      width: 300px; 
+      height: 60px; 
+      overflow-x: hidden;
+      overflow-y: auto; 
+      text-align: center; 
+      padding: 20px;
+      } 
+    </style>
+    <script type="text/javascript">    
+        sendChatMsg = new XMLHttpRequest(); 
+        getNewMsg = new XMLHttpRequest(); 
+        
+        function sendChatMessage() { 
+            chat_msg = document.getElementById("chat_input").value;
+            sendMessage(sendChatMsg, "GET", "action/chat?msg=" + chat_msg, onChatSendSuccess);
+        }
+        
+        function onChatSendSuccess() {
+            document.getElementById("chat_input").value = "";
+        }
+        
+        function sendMessage(request, msgType, url, onSuccess) {
+            request.open(msgType, url);
+            request.onreadystatechange = onSuccess; 
+            request.send();
+        }
+        
+        function getNewMessage() {
+            sendMessage(getNewMsg, "GET", "action/get_msg", onMessageRecievedSuccess);
+        }
+        
+        function onMessageRecievedSuccess() {
+            if (getNewMsg.readyState != 4) // Request has not yet completed
+                return;
+            if (getNewMsg.status != 200) {
+                alert("Something went wrong")
+                return;
+                }
+            newMsg = "<span style='color:blue'>Game28:</span> <span style='color:gray'>" + JSON.parse(getNewMsg.responseText)['msg_text']  + "</span><br>" 
+            document.getElementById("new_messages").innerHTML += newMsg;
+            
+            getNewMessage();
+        }
+    </script>
+  </head>
+  <body onload="getNewMessage()">
+    <div class="new_msg" id="new_messages">
+        <span style="color:blue">Game28:</span> <span style="color:gray">Waiting for other player to join...</span><br>
+    </div><br>
+    <div>
+        <form onsubmit="sendChatMessage(); return false;">
+            <input type="text" id="chat_input"> 
+            <input type="submit" value="Send">
+        </form>    
+    </div>
+  </body>
+</html>
