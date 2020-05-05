@@ -1,65 +1,62 @@
+{% load static %}
 <html>
-  <head>
-    <title>CardGame28</title>
-    <style> 
-      div.new_msg{ 
-      background-color: darkgray; 
-      float:left;
-      border:1px balck;
-      width: 300px; 
-      height: 60px; 
-      overflow-x: hidden;
-      overflow-y: auto; 
-      text-align: center; 
-      padding: 20px;
-      } 
-    </style>
-    <script type="text/javascript">    
-        sendChatMsg = new XMLHttpRequest(); 
-        getNewMsg = new XMLHttpRequest(); 
-        
-        function sendChatMessage() { 
-            chat_msg = document.getElementById("chat_input").value;
-            sendMessage(sendChatMsg, "GET", "action/chat?msg=" + chat_msg, onChatSendSuccess);
-        }
-        
-        function onChatSendSuccess() {
-            document.getElementById("chat_input").value = "";
-        }
-        
-        function sendMessage(request, msgType, url, onSuccess) {
-            request.open(msgType, url);
-            request.onreadystatechange = onSuccess; 
-            request.send();
-        }
-        
-        function getNewMessage() {
-            sendMessage(getNewMsg, "GET", "action/get_msg", onMessageRecievedSuccess);
-        }
-        
-        function onMessageRecievedSuccess() {
-            if (getNewMsg.readyState != 4) // Request has not yet completed
-                return;
-            if (getNewMsg.status != 200) {
-                alert("Something went wrong")
-                return;
-                }
-            newMsg = "<span style='color:blue'>Game28:</span> <span style='color:gray'>" + JSON.parse(getNewMsg.responseText)['msg_text']  + "</span><br>" 
-            document.getElementById("new_messages").innerHTML += newMsg;
-            
-            getNewMessage();
-        }
-    </script>
-  </head>
-  <body onload="getNewMessage()">
-    <div class="new_msg" id="new_messages">
-        <span style="color:blue">Game28:</span> <span style="color:gray">Waiting for other player to join...</span><br>
-    </div><br>
-    <div>
-        <form onsubmit="sendChatMessage(); return false;">
-            <input type="text" id="chat_input"> 
-            <input type="submit" value="Send">
-        </form>    
-    </div>
-  </body>
+    <head>
+        <title>CardGame28</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <style> 
+            body {
+                margin: 0;
+            }
+            #game_room {
+                position: relative;
+                left: 0%;
+                top:  0%;
+                width: 100%;
+                height: 100%;
+            }
+            #game_table {
+                border: 2px solid #8b2;
+                position: relative;
+                left: 10%;
+                top:  10%;
+                width: 80%;
+                height: 80%;
+                border-radius: 30px;
+            }
+            #game_controls {
+                background-color: darkgray; 
+               position: relative;
+                left: 0%;
+                top: 55%;
+                width: 100%;
+                height: 30%;
+            }
+            #player_1 {
+                background-color: darkgray; 
+                position: absolute;
+                left: 45%;
+                top: 5%;
+                width: 15%;
+                height: 10%;
+            }
+            #circular_square {
+                border-radius: 50%;
+                position: relative;
+                width: 100%;
+                height: 100%
+            }
+        </style>
+    </head>
+    <body>
+        <div id="game_room">
+            <div id="player_1">
+                <img id="circular_square" src="{% static "media/anonymous.jpg" %}" alt="Player 1">
+            </div>
+            <div id="game_table">
+                <div id="game_controls">
+                    
+                </div>                
+            </div>
+        </div>
+    </body>
 </html>
