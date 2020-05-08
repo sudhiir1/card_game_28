@@ -27,7 +27,7 @@
             }
             #game_controls {
                 background-color: darkgray; 
-               position: relative;
+                position: relative;
                 left: 0%;
                 top: 55%;
                 width: 100%;
@@ -60,60 +60,77 @@
             }
             #player_2 {
                 left: 85%;
-                top: 25%;
+                top: 15%;
             }
             #player_3 {
                 left: 85%;
-                top: 45%;
+                top: 40%;
             }
             #player_5 {
                 left: 0%;
-                top: 45%;
+                top: 40%;
             }
             #player_6 {
                 left: 0%;
-                top: 25%;
+                top: 15%;
             }
-
+            #player_2_four {
+                left: 85%;
+                top: 30%;
+            }
+            #player_6_four {
+                left: 0%;
+                top: 30%;
+            }
             .player_card_holder {
                 //background-color: red;
                 position: absolute;
                 width: 10%;
                 height: 10%;
             }
-            .playing_card_0 {
+            .playing_card_heads {
                 width: 100%;
                 height: 100%;
             }
-            .playing_card_90 {
+            .playing_card_sides {
                 width: 100%;
                 height: 100%;
                 transform: rotate(90deg);
             }
-            .playing_card_135 {
+            .playing_card_top_right {
                 width: 100%;
                 height: 100%;
-                transform: rotate(135deg);
+                transform: rotate(60deg);
             }
-            .playing_card_225 {
+            .playing_card_bottom_right {
                 width: 100%;
                 height: 100%;
-                transform: rotate(225deg);
+                transform: rotate(120deg);
+            }
+            .playing_card_bottom_left {
+                width: 100%;
+                height: 100%;
+                transform: rotate(240deg);
+            }
+            .playing_card_top_left {
+                width: 100%;
+                height: 100%;
+                transform: rotate(300deg);
             }
             #player_1_card {
                 position: absolute;
                 left: 45%;
-                top: 8%;
+                top: 5%;
             }
             #player_2_card {
                 position: absolute;
-                left: 72%;
-                top: 20%;
+                left: 65%;
+                top: 15%;
             }
             #player_3_card {
                 position: absolute;
                 left: 65%;
-                top: 35%;
+                top: 30%;
             }
             #player_4_card {
                 position: absolute;
@@ -123,14 +140,84 @@
             #player_5_card {
                 position: absolute;
                 left: 25%;
-                top: 35%;
+                top: 30%;
             }
             #player_6_card {
                 position: absolute;
-                left: 18%;
+                left: 25%;
+                top: 15%;
+            }
+            #trump_card {
+                position: absolute;
+                left: 7%;
+                top: 87%;
+            }
+            #my_cards {
+                background-color: blue;
+                position: absolute;
+                left: 35%;
+                top: 83%;
+                width: 50%;
+                height: 10%;
+                z-index: 1;
+            }
+            .my_card_holder {
+                background-color: yellow;
+                position: relative;
+                width: 20%;
+                height: 80%;
                 top: 20%;
             }
-        </style>
+            #my_card_1 {
+                position: absolute;
+                left:5%;
+                z-index: 1;
+            }
+            #my_card_2 {
+                position: absolute;
+                left:15%;
+                z-index: 2;
+            }
+            #my_card_3 {
+                position: absolute;
+                left:25%;
+                z-index: 3;
+            }
+            #my_card_4 {
+                position: absolute;
+                left:35%;
+                z-index: 4;
+            }
+            #my_card_5 {
+                position: absolute;
+                left:45%;
+                z-index: 5;
+            }
+            #my_card_6 {
+                position: absolute;
+                left:55%;
+                z-index: 6;
+            }
+            #my_card_7 {
+                position: absolute;
+                left:65%;
+                z-index: 7;
+            }
+            #my_card_8 {
+                position: absolute;
+                left:75%;
+                z-index: 8;
+            }
+            </style>
+            <script type="text/javascript">
+                selectedCard = null;
+                function selectMyCard(card) {
+                    card.style.top = "0%";
+                    if (selectedCard != null)
+                        selectedCard.style.top = "20%";
+                    selectedCard = card;
+                }
+            </script>
     </head>
     <body>
         <div id="game_room">
@@ -156,26 +243,56 @@
             </div>
             <div id="game_table">
                 <div id="player_1_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_0" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="player_2_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_90" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_top_right" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="player_3_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_135" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_bottom_right" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="player_4_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_0" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="player_5_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_225" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_bottom_left" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="player_6_card" class="player_card_holder">
-                    <img id="card_img" class="playing_card_90" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_top_left" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="trump_card" class="player_card_holder">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
                     
                 </div>                
+            </div>
+
+            <div id="my_cards">
+                <div id="my_card_1" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_2" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_3" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_4" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_5" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_6" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_7" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="my_card_8" class="my_card_holder" onclick="selectMyCard(this)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
             </div>
         </div>
     </body>
