@@ -17,12 +17,12 @@
             }
             #game_table {
                 border: 2px solid #8b2;
+                border-radius: 30px;
                 position: relative;
                 left: 10%;
                 top:  10%;
                 width: 80%;
                 height: 80%;
-                border-radius: 30px;
                 z-index: 0;
             }
             #game_controls {
@@ -168,58 +168,177 @@
                 height: 80%;
                 top: 20%;
             }
-            #my_card_1 {
+            #my_drag_card {
                 position: absolute;
                 left:5%;
+                z-index: 10;
+                border: 2px solid red;
+                visibility: hidden;
+                position: relative;
+                width: 20%;
+                height: 80%;
+                top: 0%;
+            }
+            .my_card_1 {
+                position: absolute;
+                left: 5%;
                 z-index: 1;
             }
-            #my_card_2 {
+            .my_card_2 {
                 position: absolute;
-                left:15%;
+                left: 15%;
                 z-index: 2;
             }
-            #my_card_3 {
+            .my_card_3 {
                 position: absolute;
-                left:25%;
+                left: 25%;
                 z-index: 3;
             }
-            #my_card_4 {
+            .my_card_4 {
                 position: absolute;
-                left:35%;
+                left: 35%;
                 z-index: 4;
             }
-            #my_card_5 {
+            .my_card_5 {
                 position: absolute;
-                left:45%;
+                left: 45%;
                 z-index: 5;
             }
-            #my_card_6 {
+            .my_card_6 {
                 position: absolute;
-                left:55%;
+                left: 55%;
                 z-index: 6;
             }
-            #my_card_7 {
+            .my_card_7 {
                 position: absolute;
-                left:65%;
+                left: 65%;
                 z-index: 7;
             }
-            #my_card_8 {
+            .my_card_8 {
                 position: absolute;
-                left:75%;
+                left: 75%;
                 z-index: 8;
+            }
+            .card_template {
+                visibility: hidden;
+                position: absolute;
+                left: 5%;
+                z-index: 1;
             }
             </style>
             <script type="text/javascript">
                 selectedCard = null;
+                
+                function intializePage() {
+                    addNewCards("");
+                    /*var my_cards = document.getElementById("my_cards"); 
+                    my_cards.addEventListener("touchstart", dragMyCard, false);
+                    my_cards.addEventListener("touchend", dropMyCard, false);
+                    */
+                }
+                dragStart = 0;
+                
                 function selectMyCard(card) {
                     card.style.top = "0%";
+                    dragCard = document.getElementById("my_drag_card");
+                    dragCardShow = "hidden";
+                    
                     if (selectedCard != null)
                         selectedCard.style.top = "20%";
-                    selectedCard = card;
+                    if (selectedCard == card)
+                        selectedCard = null;
+                    else {
+                        selectedCard = card;
+                        dragCardShow = "visible";
+                        document.getElementById("game_controls").innerHTML = "Left: " + selectedCard.style.left;
+                        dragCard.style.left = selectedCard.style.left;
+                    }
+                    dragCard.style.visibility = dragCardShow;
+                }
+                
+                function dragMyCard(event) {
+                    event.dataTransfer.setData("Text", event.target.id);
+                    document.getElementById("game_controls").innerHTML = "Started to drag the p element";
+                }
+                
+                function dropMyCard(event) {
+                    allowDrop(event);
+                    document.getElementById("game_controls").innerHTML = "dropped on me: " + event.target.parentElement.id;
+                    
+                    
+                    newPos = event.target.parentElement.style.left;
+                    newIndex = event.target.parentElement.style.zIndex;
+                    
+                    event.target.parentElement.style.left = selectedCard.style.left;
+                    event.target.parentElement.style.zIndex = selectedCard.style.zIndex;
+                    selectedCard.style.left = newPos;
+                    selectedCard.style.zIndex = newIndex;
+                    
+                    dragCard = document.getElementById("my_drag_card");
+                    dragCard.style.left = newPos;
+                }
+                
+                function allowDrop(event) {
+                    event.preventDefault();
+                }
+                
+                function addNewCards(cards) {
+                    myCards = document.getElementById("my_cards");
+                    cardCount = myCards.children.length - 1;
+                    //newCardHtml = '<div id="my_card_1" class="my_card_holder my_card_1" onclick="selectMyCard(this)" ondblclick="" ondrop="dropMyCard(event, this)" ondragover="allowDrop(event)"></div>';
+                
+                    //newCard = document.createElement(newCardHtml);
+                    newCard = document.getElementById("card_CA").cloneNode(true);
+                    newCard.style.left = "5%";
+                    newCard.style.zIndex = "1";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "15%";
+                    newCard.style.zIndex = "2";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "25%";
+                    newCard.style.zIndex = "3";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "35%";
+                    newCard.style.zIndex = "4";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "45%";
+                    newCard.style.zIndex = "5";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "55%";
+                    newCard.style.zIndex = "6";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "65%";
+                    newCard.style.zIndex = "7";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
+                    
+                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.style.left = "75%";
+                    newCard.style.zIndex = "8";
+                    newCard.style.visibility = "visible";
+                    myCards.appendChild(newCard);
                 }
             </script>
     </head>
-    <body>
+    <body onload="intializePage()">
         <div id="game_room">
             <div id="player_1" class="player">
                 <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 1">
@@ -269,30 +388,14 @@
             </div>
 
             <div id="my_cards">
-                <div id="my_card_1" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                <div id="my_drag_card" draggable="true" onclick="selectMyCard(selectedCard)" ondblclick="" ondragstart="dragMyCard(event)">
                 </div>
-                <div id="my_card_2" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_3" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_4" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_5" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_6" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_7" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="my_card_8" class="my_card_holder" onclick="selectMyCard(this)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
+            </div>
+            <div id="card_BK" class="my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+                <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+            </div>
+            <div id="card_CA" class="my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+                <img id="card_img" class="playing_card_heads" src="{% static "media/CA.png" %}">
             </div>
         </div>
     </body>
