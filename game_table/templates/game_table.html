@@ -153,7 +153,7 @@
                 top: 87%;
             }
             #my_cards {
-                background-color: blue;
+                //background-color: blue;
                 position: absolute;
                 left: 35%;
                 top: 83%;
@@ -250,7 +250,6 @@
                     else {
                         selectedCard = card;
                         dragCardShow = "visible";
-                        document.getElementById("game_controls").innerHTML = "Left: " + selectedCard.style.left;
                         dragCard.style.left = selectedCard.style.left;
                     }
                     dragCard.style.visibility = dragCardShow;
@@ -263,19 +262,35 @@
                 
                 function dropMyCard(event) {
                     allowDrop(event);
-                    document.getElementById("game_controls").innerHTML = "dropped on me: " + event.target.parentElement.id;
+                    if (selectedCard == null)
+                        return;
+                    newNeighborCard = event.target.parentElement;
+                     
+                    newPos = parseInt(newNeighborCard.style.left.replace("%", ""));
+                    oldPos = parseInt(selectedCard.style.left.replace("%", ""));
+                    newzIndex = newNeighborCard.style.zIndex;
+                    oldzIndex = selectedCard.style.zIndex;
                     
+                    moveDirection = 1; //1 for left, -1 for right
+                    if (newzIndex > oldzIndex)
+                        moveDirection = -1;
                     
-                    newPos = event.target.parentElement.style.left;
-                    newIndex = event.target.parentElement.style.zIndex;
-                    
-                    event.target.parentElement.style.left = selectedCard.style.left;
-                    event.target.parentElement.style.zIndex = selectedCard.style.zIndex;
-                    selectedCard.style.left = newPos;
-                    selectedCard.style.zIndex = newIndex;
-                    
+                    cardShiftPos = ((newPos - oldPos)/ (newzIndex - oldzIndex)) * moveDirection;
+                                        
+                    var children = newNeighborCard.parentElement.children;
+                    for (var i = 0; i < children.length; i++) {
+                      var card = children[i];
+                      if (card.id == "my_drag_card")
+                        continue;
+                      if ((card.style.zIndex >= newzIndex && card.style.zIndex < oldzIndex) || (card.style.zIndex <= newzIndex && card.style.zIndex > oldzIndex)) {
+                        card.style.left = (parseInt(card.style.left.replace("%", "")) + cardShiftPos) + "%";
+                        card.style.zIndex = parseInt(card.style.zIndex) + moveDirection;
+                      }
+                    }
+                    selectedCard.style.left = newPos + "%";
+                    selectedCard.style.zIndex = newzIndex;
                     dragCard = document.getElementById("my_drag_card");
-                    dragCard.style.left = newPos;
+                    dragCard.style.left = newPos + "%";
                 }
                 
                 function allowDrop(event) {
@@ -289,48 +304,56 @@
                 
                     //newCard = document.createElement(newCardHtml);
                     newCard = document.getElementById("card_CA").cloneNode(true);
+                    newCard.id = "card_1"
                     newCard.style.left = "5%";
                     newCard.style.zIndex = "1";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
                     newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.id = "card_2"
                     newCard.style.left = "15%";
                     newCard.style.zIndex = "2";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
                     newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.id = "card_3"
                     newCard.style.left = "25%";
                     newCard.style.zIndex = "3";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
                     newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.id = "card_4"
                     newCard.style.left = "35%";
                     newCard.style.zIndex = "4";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
-                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard = document.getElementById("card_CA").cloneNode(true);
+                    newCard.id = "card_5"
                     newCard.style.left = "45%";
                     newCard.style.zIndex = "5";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
                     newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.id = "card_6"
                     newCard.style.left = "55%";
                     newCard.style.zIndex = "6";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
-                    newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard = document.getElementById("card_CA").cloneNode(true);
+                    newCard.id = "card_7"
                     newCard.style.left = "65%";
                     newCard.style.zIndex = "7";
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                     
                     newCard = document.getElementById("card_BK").cloneNode(true);
+                    newCard.id = "card_8"
                     newCard.style.left = "75%";
                     newCard.style.zIndex = "8";
                     newCard.style.visibility = "visible";
@@ -338,7 +361,7 @@
                 }
             </script>
     </head>
-    <body onload="intializePage()">
+    <body oncontextmenu="return false;" onload="intializePage()">
         <div id="game_room">
             <div id="player_1" class="player">
                 <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 1">
