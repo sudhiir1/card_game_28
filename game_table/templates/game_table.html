@@ -257,7 +257,6 @@
                 
                 function dragMyCard(event) {
                     event.dataTransfer.setData("Text", event.target.id);
-                    document.getElementById("game_controls").innerHTML = "Started to drag the p element";
                 }
                 
                 function dropMyCard(event) {
@@ -359,6 +358,29 @@
                     newCard.style.visibility = "visible";
                     myCards.appendChild(newCard);
                 }
+                
+                var dragCardClickTimeoutId = null;
+                function dragCardClick(event) {
+                    if (selectedCard == null)
+                        return;
+                    if (event.type == "dblclick") {
+                        window.clearTimeout(dragCardClickTimeoutId);
+                        dragCardClickTimeoutId = null;
+                        putMyCard(selectedCard);
+                    }
+                    else if (event.type == "click" && dragCardClickTimeoutId == null)
+                        dragCardClickTimeoutId = setTimeout("selectMyCard(selectedCard); dragCardClickTimeoutId = null;", 500);
+                        
+                    //document.getElementById("game_controls").innerHTML += event.type + "\n";
+                }
+                
+                function putMyCard(card) {
+                    player4Card = document.getElementById("player_4_card");
+                    //cardImg = player4Card.getElementById("card_img");
+                    
+                    player4Card.removeChild(player4Card.children[0]);
+                    player4Card.appendChild(card);
+                }
             </script>
     </head>
     <body oncontextmenu="return false;" onload="intializePage()">
@@ -411,7 +433,7 @@
             </div>
 
             <div id="my_cards">
-                <div id="my_drag_card" draggable="true" onclick="selectMyCard(selectedCard)" ondblclick="" ondragstart="dragMyCard(event)">
+                <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
             </div>
             <div id="card_BK" class="my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
