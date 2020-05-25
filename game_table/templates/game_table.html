@@ -381,6 +381,25 @@
                     player4Card.removeChild(player4Card.children[0]);
                     player4Card.appendChild(card);
                 }
+                //---------------------------------------------------------------------------------
+
+                sendChatMsg = new XMLHttpRequest(); 
+                getNewMsg = new XMLHttpRequest(); 
+                var gameSocket = new WebSocket("wss://ec2-3-134-97-118.us-east-2.compute.amazonaws.com")
+                gameSocket.onmessage = function (event) {
+                    onMessageRecievedSuccess(event.data);
+                }
+
+                function sendChatMessage() { 
+                    chat_msg = document.getElementById("chat_input").value;
+                    gameSocket.send(chat_msg);
+                    document.getElementById("chat_input").value = "";
+                }
+                              
+                function onMessageRecievedSuccess(data) {
+                    newMsg = "<span style='color:blue'>Game28:</span> <span style='color:black'>" + data  + "</span><br>" 
+                    document.getElementById("new_messages").innerHTML += newMsg;
+                }
             </script>
     </head>
     <body oncontextmenu="return false;" onload="intializePage()">
@@ -428,7 +447,15 @@
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
-                    
+                    <div class="new_msg" id="new_messages">
+                        <span style="color:blue">Game28:</span> <span style="color:gray">Waiting for other player to join...</span><br>
+                    </div><br>
+                    <div>
+                        <form onsubmit="sendChatMessage(); return false;">
+                            <input type="text" id="chat_input"> 
+                            <input type="submit" value="Send">
+                        </form>    
+                    </div>
                 </div>                
             </div>
 
@@ -445,3 +472,4 @@
         </div>
     </body>
 </html>
+
