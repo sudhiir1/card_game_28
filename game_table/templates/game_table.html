@@ -385,7 +385,7 @@
 
                 sendChatMsg = new XMLHttpRequest(); 
                 getNewMsg = new XMLHttpRequest(); 
-                var gameSocket = new WebSocket("wss://ec2-3-134-97-118.us-east-2.compute.amazonaws.com")
+                var gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000")
                 gameSocket.onmessage = function (event) {
                     onMessageRecievedSuccess(event.data);
                 }
