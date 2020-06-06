@@ -8,42 +8,45 @@
                 margin: 0;
             }
             #game_room {
-                position: relative;
+                position: absolute;
                 left: 0%;
                 top:  0%;
                 width: 100%;
                 height: 100%;
-                z-index: 0;
+                z-index: 5;
             }
             #game_table {
                 border: 2px solid #8b2;
                 border-radius: 30px;
-                position: relative;
+                position: absolute;
                 left: 10%;
                 top:  10%;
                 width: 80%;
                 height: 80%;
-                z-index: 0;
+                z-index: 10;
             }
             #game_controls {
                 background-color: darkgray; 
-                position: relative;
+                padding: 5%;
+                position: absolute;
                 left: 0%;
                 top: 55%;
-                width: 100%;
-                height: 30%;
-                z-index: 1;
+                width: 89.9%;
+                height: 25%;
+                overflow-x: hidden;
+                overflow-y: auto; 
+                z-index: 15;
             }
             .player {
-                //background-color: darkgray; 
+                background-color: darkgray; 
                 position: absolute;
                 width: 15%;
                 height: 10%;
-                z-index: 2;
+                z-index: 25;
             }
             .player_photo {
                 border-radius: 50%;
-                position: relative;
+                position: absolute;
                 width: 100%;
                 height: 100%
             }
@@ -82,15 +85,15 @@
                 left: 0%;
                 top: 30%;
             }
-            .player_card_holder {
-                //background-color: red;
+            .card_holder {
+                background-color: red;
                 position: absolute;
-                width: 10%;
-                height: 10%;
+                width: 45px;
+                height: 60px;
             }
             .playing_card_heads {
-                width: 100%;
-                height: 100%;
+                width: 45px;
+                height: 60px;
             }
             .playing_card_sides {
                 width: 100%;
@@ -153,31 +156,29 @@
                 top: 87%;
             }
             #my_cards {
-                //background-color: blue;
+                background-color: blue;
                 position: absolute;
                 left: 35%;
                 top: 83%;
                 width: 50%;
                 height: 10%;
-                z-index: 1;
+                z-index: 25;
             }
             .my_card_holder {
                 background-color: yellow;
-                position: relative;
-                width: 20%;
-                height: 80%;
+                position: absolute;
                 top: 20%;
             }
             #my_drag_card {
                 position: absolute;
-                left:5%;
-                z-index: 10;
+                left:0%;
                 border: 2px solid red;
                 visibility: hidden;
-                position: relative;
+                position: absolute;
                 width: 20%;
                 height: 80%;
                 top: 0%;
+                z-index: 10;
             }
             .my_card_1 {
                 position: absolute;
@@ -224,6 +225,24 @@
                 position: absolute;
                 left: 5%;
                 z-index: 1;
+            }
+            .card_carrier {
+                z-index: 20;
+            }
+            .drop_card_anim {
+                animation-duration: 400ms;
+                animation-name: drop_card_anim;
+                animation-iteration-count: 1;
+            }
+            @keyframes drop_card_anim {
+                /* from {
+                    left: 45%;
+                    top: 83%;
+                } */
+                to {
+                    left: 45%;
+                    top: 40%; 
+                }
             }
             </style>
             <script type="text/javascript">
@@ -375,11 +394,40 @@
                 }
                 
                 function putMyCard(card) {
-                    player4Card = document.getElementById("player_4_card");
+                    // player4Card = document.getElementById("player_4_card");
                     //cardImg = player4Card.getElementById("card_img");
                     
-                    player4Card.removeChild(player4Card.children[0]);
-                    player4Card.appendChild(card);
+                    // player4Card.removeChild(player4Card.children[0]);
+                    // player4Card.appendChild(card);
+                    cardCarrier_1 = document.getElementById("card_carrier_1");
+                    cardCarrier_1.innerHTML = "";
+                    cardCarrier_1.appendChild(card.children[0])
+                    cardPos = card.getBoundingClientRect()
+                    cardCarrier_1.style.top = cardPos.top + "px"
+                    cardCarrier_1.style.left = cardPos.left + "px"
+                    card.parentElement.removeChild(card)
+                    
+                    cardCarrier_1.addEventListener("animationstart", listener_animation, false);
+                    cardCarrier_1.addEventListener("animationend", listener_animation, false);
+
+
+
+                    cardCarrier_1.classList.toggle("drop_card_anim");
+                }
+
+                function listener_animation(event) {
+                    switch(event.type) {
+                        case "animationstart":
+                            break
+                        case "animationend":
+                            player4Card = document.getElementById("player_4_card");
+                            player4Card.innerHTML = "";
+                            player4Card.appendChild(event.target.children[0]);
+
+                            cardCarrier_1 = document.getElementById("card_carrier_1");
+                            cardCarrier_1.classList.toggle("drop_card_anim");
+                        break;
+                    }
                 }
                 //---------------------------------------------------------------------------------
 
@@ -425,25 +473,25 @@
                 <div id="player_name" class="player_text">Player 6</div>
             </div>
             <div id="game_table">
-                <div id="player_1_card" class="player_card_holder">
+                <div id="player_1_card" class="card_holder">
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="player_2_card" class="player_card_holder">
+                <div id="player_2_card" class="card_holder">
                     <img id="card_img" class="playing_card_top_right" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="player_3_card" class="player_card_holder">
+                <div id="player_3_card" class="card_holder">
                     <img id="card_img" class="playing_card_bottom_right" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="player_4_card" class="player_card_holder">
+                <div id="player_4_card" class="card_holder">
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="player_5_card" class="player_card_holder">
+                <div id="player_5_card" class="card_holder">
                     <img id="card_img" class="playing_card_bottom_left" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="player_6_card" class="player_card_holder">
+                <div id="player_6_card" class="card_holder">
                     <img id="card_img" class="playing_card_top_left" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
-                <div id="trump_card" class="player_card_holder">
+                <div id="trump_card" class="card_holder">
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
@@ -463,11 +511,14 @@
                 <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
             </div>
-            <div id="card_BK" class="my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+            <div id="card_BK" class="card_holder my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
                 <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
             </div>
-            <div id="card_CA" class="my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+            <div id="card_CA" class="card_holder my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
                 <img id="card_img" class="playing_card_heads" src="{% static "media/CA.png" %}">
+            </div>
+            <div id="card_carrier_1" class="card_holder card_carrier">
+
             </div>
         </div>
     </body>
