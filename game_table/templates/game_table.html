@@ -6,7 +6,7 @@
         <link rel="stylesheet" type="text/css" href="{% static 'css/game_table.css' %}"/>
         <script type="text/javascript" src="{% static 'js/game_table.js' %}"> </script>
     </head>
-    <body oncontextmenu="return false;" onload="intializePage()">
+    <body oncontextmenu="return false;" onload="intializePage('{{ table_number }}', '{{ player_name }}');">
         <div id="game_room">
             <div id="player_1" class="player">
                 <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 1">

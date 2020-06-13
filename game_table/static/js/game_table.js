@@ -1,13 +1,15 @@
 selectedCard = null;
-                
-function intializePage() {
+dragStart = 0; 
+
+function intializePage(my_table, my_name) {
     addNewCards("");
+
+    initiate_connection(my_table, my_name);
     /*var my_cards = document.getElementById("my_cards"); 
     my_cards.addEventListener("touchstart", dragMyCard, false);
     my_cards.addEventListener("touchend", dropMyCard, false);
     */
 }
-dragStart = 0;
 
 function selectMyCard(card) {
     card.style.top = "0%";
@@ -187,12 +189,14 @@ function listener_animation(event) {
     }
 }
 //---------------------------------------------------------------------------------
+var gameSocket = null;
 
-sendChatMsg = new XMLHttpRequest(); 
-getNewMsg = new XMLHttpRequest(); 
-var gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000")
-gameSocket.onmessage = function (event) {
-    onMessageRecievedSuccess(event.data);
+function initiate_connection(my_table, my_name) {
+    gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000?player=" + my_name + "&table=" + my_table);
+
+    gameSocket.onmessage = function (event) {
+        onMessageRecievedSuccess(event.data);
+    }
 }
 
 function sendChatMessage() { 
