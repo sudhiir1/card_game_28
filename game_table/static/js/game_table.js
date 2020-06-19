@@ -1,14 +1,30 @@
 selectedCard = null;
 dragStart = 0; 
+seats = [];
 
-function intializePage(my_table, my_name) {
-    addNewCards("");
+function intializePage(my_table, num_seats, my_name) {
+    //addNewCards("");
+    setup_table(num_seats);
 
     initiate_connection(my_table, my_name);
     /*var my_cards = document.getElementById("my_cards"); 
     my_cards.addEventListener("touchstart", dragMyCard, false);
     my_cards.addEventListener("touchend", dropMyCard, false);
     */
+}
+
+function setup_table(num_seats) {
+    seat_ids = [];
+    if (num_seats == 4) {
+        seat_ids = ["seat_mine", "seat_left", "seat_facing", "seat_right"];
+    }
+    else {
+        seat_ids = ["seat_mine", "seat_left_down", "seat_left_up", "seat_facing", "seat_right_up", "seat_right_down"];
+    }
+    for (i=0; i<seat_ids.length; i++) {
+        seats[i] = document.getElementById(seat_ids[i]);
+        seats[i].style.visibility = "visible";
+    }
 }
 
 function selectMyCard(card) {

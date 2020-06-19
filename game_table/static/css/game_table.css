@@ -1,4 +1,4 @@
-    body {
+body {
     margin: 0;
 }
 #game_room {
@@ -20,23 +20,18 @@
     z-index: 10;
 }
 #game_controls {
-    background-color: darkgray; 
-    padding: 5%;
+    background-color: rgb(94, 47, 47); 
     position: absolute;
     left: 0%;
     top: 55%;
-    width: 89.9%;
-    height: 25%;
+    width: 99.9%;
+    height: 35%;
     overflow-x: hidden;
     overflow-y: auto; 
     z-index: 15;
 }
 .player {
-    background-color: darkgray; 
-    position: absolute;
-    width: 15%;
-    height: 10%;
-    z-index: 25;
+    visibility: hidden;
 }
 .player_photo {
     border-radius: 50%;
@@ -51,31 +46,50 @@
     width: 100%;
     text-align: center;
 }
-#player_1 {
+.seat {
+    background-color: darkgray;
+    position: absolute;
+    border-radius: 50%;
+    width: 15%;
+    height: 10%;
+    z-index: 25;
+    visibility: hidden;
+}
+.seat_photo {
+    background-image: url('/static/media/anonymous.jpg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+#seat_mine {
+    left: 43%;
+    top: 83%;
+}
+#seat_facing {
     left: 43%;
     top: 2%;
 }
-#player_2 {
+#seat_right_up {
     left: 85%;
     top: 15%;
 }
-#player_3 {
+#seat_right_down {
     left: 85%;
     top: 40%;
 }
-#player_5 {
+#seat_left_down {
     left: 0%;
     top: 40%;
 }
-#player_6 {
+#seat_left_up {
     left: 0%;
     top: 15%;
 }
-#player_2_four {
+#seat_right {
     left: 85%;
     top: 30%;
 }
-#player_6_four {
+#seat_left {
     left: 0%;
     top: 30%;
 }

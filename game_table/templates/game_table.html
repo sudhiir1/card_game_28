@@ -6,28 +6,16 @@
         <link rel="stylesheet" type="text/css" href="{% static 'css/game_table.css' %}"/>
         <script type="text/javascript" src="{% static 'js/game_table.js' %}"> </script>
     </head>
-    <body oncontextmenu="return false;" onload="intializePage('{{ table_number }}', '{{ player_name }}');">
+    <body oncontextmenu="return false;" onload="intializePage('{{ table_number }}', '{{ seats }}', '{{ player_name }}');">
         <div id="game_room">
-            <div id="player_1" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 1">
-                <div id="player_name" class="player_text">Player 1</div>
-            </div>
-            <div id="player_2" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 2">
-                <div id="player_name" class="player_text">Player 2</div>
-            </div>
-            <div id="player_3" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 3">
-                <div id="player_name" class="player_text">Player 3</div>
-            </div>
-            <div id="player_5" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 5">
-                <div id="player_name" class="player_text">Player 5</div>
-            </div>
-            <div id="player_6" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player 6">
-                <div id="player_name" class="player_text">Player 6</div>
-            </div>
+            <div id="seat_mine" class="seat seat_photo"></div>
+            <div id="seat_facing" class="seat seat_photo"></div>
+            <div id="seat_left" class="seat seat_photo"></div>
+            <div id="seat_right" class="seat seat_photo"></div>
+            <div id="seat_left_up" class="seat seat_photo"></div>
+            <div id="seat_left_down" class="seat seat_photo"></div>
+            <div id="seat_right_up" class="seat seat_photo"></div>
+            <div id="seat_right_down" class="seat seat_photo"></div>
             <div id="game_table">
                 <div id="player_1_card" class="card_holder">
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
@@ -51,7 +39,7 @@
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
-                    <div class="new_msg" id="new_messages">
+                    <div id="new_messages">
                         <span style="color:blue">Game28:</span> <span style="color:gray">Waiting for other player to join...</span><br>
                     </div><br>
                     <div>
@@ -66,6 +54,10 @@
             <div id="my_cards">
                 <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
+            </div>
+            <div id="player_template" class="player">
+                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player avatar">
+                <div id="player_name" class="player_text">Player</div>
             </div>
             <div id="card_BK" class="card_holder my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
                 <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">

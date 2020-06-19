@@ -17,8 +17,12 @@ def game_table(request):
     if request.method == 'POST':
         table_no =  request.POST.get("table_number", "")
         player_name =  request.POST.get("player_name", "")
+        seats = 6
 
-        return render(request, 'game_table.html', {"table_number": table_no, "player_name": player_name})
+        if int(table_no) % 2 == 0:
+            seats = 4
+
+        return render(request, 'game_table.html', {"table_number": table_no, "seats": seats, "player_name": player_name})
     else:
         return player_login(request)
 
