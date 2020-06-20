@@ -25,7 +25,7 @@ body {
     left: 0%;
     top: 55%;
     width: 99.9%;
-    height: 35%;
+    height: 30%;
     overflow-x: hidden;
     overflow-y: auto; 
     z-index: 15;
@@ -62,11 +62,11 @@ body {
     background-position: center;
 }
 #seat_mine {
-    left: 43%;
+    left: 45%;
     top: 83%;
 }
 #seat_facing {
-    left: 43%;
+    left: 45%;
     top: 2%;
 }
 #seat_right_up {
@@ -87,76 +87,56 @@ body {
 }
 #seat_right {
     left: 85%;
-    top: 30%;
+    top: 27%;
 }
 #seat_left {
     left: 0%;
-    top: 30%;
+    top: 27%;
 }
-.card_holder {
+.card {
     background-color: red;
     position: absolute;
     width: 45px;
     height: 60px;
+    visibility: hidden;
 }
-.playing_card_heads {
-    width: 45px;
-    height: 60px;
-}
-.playing_card_sides {
-    width: 100%;
-    height: 100%;
-    transform: rotate(90deg);
-}
-.playing_card_top_right {
-    width: 100%;
-    height: 100%;
-    transform: rotate(60deg);
-}
-.playing_card_bottom_right {
-    width: 100%;
-    height: 100%;
-    transform: rotate(120deg);
-}
-.playing_card_bottom_left {
-    width: 100%;
-    height: 100%;
-    transform: rotate(240deg);
-}
-.playing_card_top_left {
-    width: 100%;
-    height: 100%;
-    transform: rotate(300deg);
-}
-#player_1_card {
-    position: absolute;
+#pcard_facing {
     left: 45%;
     top: 5%;
 }
-#player_2_card {
-    position: absolute;
+#pcard_right_up {
     left: 65%;
     top: 15%;
+    transform: rotate(60deg);
 }
-#player_3_card {
-    position: absolute;
+#pcard_right_down {
     left: 65%;
     top: 30%;
+    transform: rotate(120deg);
 }
-#player_4_card {
-    position: absolute;
+#pcard_mine {
     left: 45%;
     top: 40%;
 }
-#player_5_card {
-    position: absolute;
+#pcard_left_down {
     left: 25%;
     top: 30%;
+    transform: rotate(240deg);
 }
-#player_6_card {
-    position: absolute;
+#pcard_left_up {
     left: 25%;
     top: 15%;
+    transform: rotate(300deg);
+}
+#pcard_left {
+    left: 25%;
+    top: 23%;
+    transform: rotate(90deg);
+}
+#pcard_right {
+    left: 65%;
+    top: 23%;
+    transform: rotate(90deg);
 }
 #trump_card {
     position: absolute;

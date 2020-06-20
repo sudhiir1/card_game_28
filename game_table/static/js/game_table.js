@@ -1,12 +1,23 @@
 selectedCard = null;
 dragStart = 0; 
-seats = [];
 
-function intializePage(my_table, num_seats, my_name) {
+total_seats = 0;
+seats = [];
+play_cards = [];
+
+my_seat = 0;
+active_playing = false;
+
+my_table = 0;
+my_name = "";
+
+function intializePage(table, num_seats, name) {
+    my_table = table;
+    my_name = name;
     //addNewCards("");
     setup_table(num_seats);
 
-    initiate_connection(my_table, my_name);
+    initiate_connection(table, name);
     /*var my_cards = document.getElementById("my_cards"); 
     my_cards.addEventListener("touchstart", dragMyCard, false);
     my_cards.addEventListener("touchend", dropMyCard, false);
@@ -14,16 +25,21 @@ function intializePage(my_table, num_seats, my_name) {
 }
 
 function setup_table(num_seats) {
+    total_seats = parseInt(num_seats);
     seat_ids = [];
-    if (num_seats == 4) {
+    if (total_seats == 4) {
         seat_ids = ["seat_mine", "seat_left", "seat_facing", "seat_right"];
+        play_cards_ids = ["pcard_mine", "pcard_left", "pcard_facing", "pcard_right"];
     }
     else {
         seat_ids = ["seat_mine", "seat_left_down", "seat_left_up", "seat_facing", "seat_right_up", "seat_right_down"];
+        play_cards_ids = ["pcard_mine", "pcard_left_down", "pcard_left_up", "pcard_facing", "pcard_right_up", "pcard_right_down"];
     }
     for (i=0; i<seat_ids.length; i++) {
         seats[i] = document.getElementById(seat_ids[i]);
         seats[i].style.visibility = "visible";
+        play_cards[i] = document.getElementById(play_cards_ids[i]);
+        play_cards[i].style.visibility = "visible";
     }
 }
 
@@ -206,6 +222,12 @@ function listener_animation(event) {
 }
 //---------------------------------------------------------------------------------
 var gameSocket = null;
+MSG_SEP = ":";
+msg_handlers = {
+    "chat": display_message,
+    "seat": save_my_seat,
+    "newp": update_new_player,
+}
 
 function initiate_connection(my_table, my_name) {
     gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000?player=" + my_name + "&table=" + my_table);
@@ -222,6 +244,40 @@ function sendChatMessage() {
 }
               
 function onMessageRecievedSuccess(data) {
-    newMsg = "<span style='color:blue'>Game28:</span> <span style='color:black'>" + data  + "</span><br>" 
+    msg_type = data.slice(0, 4);
+    if (msg_handlers[msg_type] != null) {
+        msg_handlers[msg_type](data.slice(5).split(MSG_SEP));
+    }
+    else
+        display_message(data);
+}
+
+function display_message(msg) {
+    newMsg = "<span style='color:blue'>Game28:</span> <span style='color:black'>" + msg  + "</span><br>" 
     document.getElementById("new_messages").innerHTML += newMsg;
+}
+
+function save_my_seat(seat_info) {
+    my_seat = parseInt(seat_info[0]);
+    active_playing = (seat_info[1] == 1);
+    if (active_playing)
+        display_message(`Ready to play as ${my_name} in seat ${my_seat + 1}`)
+    else
+        display_message(`Viewing the game from seat ${my_seat + 1}`)
+}
+
+function update_new_player(newp_info) {
+    new_player_seat_no = parseInt(newp_info[1]);
+    if (my_seat == new_player_seat_no)
+        return;
+
+    player_index = new_player_seat_no - my_seat;
+    if (player_index < 0)
+        player_index = total_seats + player_index;
+    
+    new_player = document.getElementById("player_template").cloneNode(true);
+    new_player.children["player_name"].innerHTML = newp_info[0];
+    new_player.style.visibility = "visible";
+
+    seats[player_index].appendChild(new_player);
 }
