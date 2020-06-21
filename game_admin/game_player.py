@@ -30,8 +30,6 @@ class GamePlayer:
 
         loop = asyncio.get_event_loop()
         task = loop.create_task(self.send_conn({'type': 'websocket.accept'}))
-
-        self.send_message("seat:{0}{1}{2}".format(self.seat, SEP, self.status.value))
         
     def send_message(self, msg):
         if self.send_conn is None:

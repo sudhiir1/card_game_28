@@ -17,14 +17,14 @@
             <div id="seat_right_up" class="seat seat_photo"></div>
             <div id="seat_right_down" class="seat seat_photo"></div>
             <div id="game_table">
-                <div id="pcard_mine" class="card"></div>
-                <div id="pcard_facing" class="card"></div>
-                <div id="pcard_left" class="card"></div>
-                <div id="pcard_right" class="card"></div>
-                <div id="pcard_left_up" class="card"></div>
-                <div id="pcard_left_down" class="card"></div>
-                <div id="pcard_right_up" class="card"></div>
-                <div id="pcard_right_down" class="card"></div>
+                <div id="pcard_mine" class="card playing_card"></div>
+                <div id="pcard_facing" class="card playing_card"></div>
+                <div id="pcard_left" class="card playing_card"></div>
+                <div id="pcard_right" class="card playing_card"></div>
+                <div id="pcard_left_up" class="card playing_card"></div>
+                <div id="pcard_left_down" class="card playing_card"></div>
+                <div id="pcard_right_up" class="card playing_card"></div>
+                <div id="pcard_right_down" class="card playing_card"></div>
                 <div id="trump_card" class="card">
                     <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
@@ -45,21 +45,23 @@
                 <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
             </div>
-            <div id="playing_card" class="card">
-                <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-            </div>
-            <div id="player_template" class="player">
-                <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player avatar">
-                <div id="player_name" class="player_text">Player</div>
-            </div>
-            <div id="card_BK" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
-                <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
-            </div>
-            <div id="card_CA" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
-                <img id="card_img" class="playing_card_heads" src="{% static "media/CA.png" %}">
-            </div>
             <div id="card_carrier_1" class="card card_carrier">
 
+            </div>
+            <div id="vault" style="display:none;">
+                <div id="playing_card" class="card">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="player_template" class="player">
+                    <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player avatar">
+                    <div id="player_name" class="player_text">Player</div>
+                </div>
+                <div id="card_BK" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                </div>
+                <div id="card_CA" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
+                    <img id="card_img" class="playing_card_heads" src="{% static "media/CA.png" %}">
+                </div>
             </div>
         </div>
     </body>

@@ -31,7 +31,7 @@ body {
     z-index: 15;
 }
 .player {
-    visibility: hidden;
+    /* position: absolute; */
 }
 .player_photo {
     border-radius: 50%;
@@ -98,6 +98,8 @@ body {
     position: absolute;
     width: 45px;
     height: 60px;
+}
+.playing_card {
     visibility: hidden;
 }
 #pcard_facing {

@@ -20,17 +20,31 @@ class TableAdmin:
                 log.warn("One {} already playing in table_{}".format(player_name, self.table_number))
                 return None # Todo: accept connection, send error and close connection/redirect
             else:
+                log.info("{} joining back".format(player_name))
                 new_player = self.players[player_name]
         else:
-            self.players[player_name] = new_player = GamePlayer(player_name, self)
+            log.info("{} is new to the table".format(player_name))
+            new_player = GamePlayer(player_name, self)
 
         seat_no, player_status = self.assign_seat(new_player)
         new_player.accept_connection(player_conn, seat_no, player_status)
 
         log.info("Adding player to seat {} of the table_{}. Welcome {}".format(seat_no, self.table_number, player_name))
-        self.send_everyone("newp", "{0}{1}{2}".format(player_name, SEP, seat_no))
+        self.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player_name, SEP, player_status.value, SEP, seat_no))
 
+        self.send_current_players_info(new_player)
+        
         return new_player
+
+    def send_current_players_info(self, to_player):
+        player_info = ""
+        for i in range(len(self.seats)):
+            if not self.seats[i] is None:
+                player = self.seats[i]
+                player_info += "{0}{1}{2}{3}{4}{5}".format(SEP, player.name, SEP, player.status.value, SEP, i)
+        if player_info != "":
+            to_player.send_message("seat" + player_info)
+            log.info("Sent msg: seat{}".format(player_info))
 
     def say_goodbye(self, leaving_player):
         self.remove_player(leaving_player)
@@ -45,17 +59,18 @@ class TableAdmin:
         for _, player in self.players.items():
             if player.status != PlayerStatus.InActive:
                 player.send_message("{0}{1}{2}".format(msg_type, SEP, msg))
-        log.info("Sent: {}: {}".format(msg_type, msg))
+        log.info("Sent: {}:{}".format(msg_type, msg))
 
+    def assign_seat(self, player):
+        if not self.players.get(player.name) is None and self.seats[player.seat] is None:
+            log.info("Assigning {} to seat number {}".format(new_player.name, new_player.seat))
+            self.seats[player.seat] = player
+            return player.seat, PlayerStatus.Active
 
-    def assign_seat(self, new_player):
-        if new_player.seat != NO_SEAT and self.seats[new_player.seat] is None:
-            log.info("Assigning {} seat number {} the same seat he was earlier".format(new_player.name, new_player.seat))
-            return new_player.seat, PlayerStatus.Active
-
+        self.players[player.name] = player
         for i in range(len(self.seats)):
             if self.seats[i] is None:
-                self.seats[i] = new_player
+                self.seats[i] = player
                 return i, PlayerStatus.Active
         return NO_SEAT, PlayerStatus.Spectator
 

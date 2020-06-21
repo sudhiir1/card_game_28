@@ -1,3 +1,6 @@
+ACTIVE_PLAYER = 1;
+NO_SEAT = -1;
+
 selectedCard = null;
 dragStart = 0; 
 
@@ -5,7 +8,7 @@ total_seats = 0;
 seats = [];
 play_cards = [];
 
-my_seat = 0;
+my_seat = NO_SEAT;
 active_playing = false;
 
 my_table = 0;
@@ -220,13 +223,33 @@ function listener_animation(event) {
         break;
     }
 }
+
+function index_from_seat(seat_no) {
+    player_index = seat_no - my_seat;
+    if (player_index < 0)
+        player_index = total_seats + player_index;
+
+    return player_index;
+}
+
+function assign_player_to_seat(name, seat_no) {
+    player_index = index_from_seat(seat_no);
+
+    new_player = document.getElementById("player_template").cloneNode(true);
+    new_player.children["player_name"].innerHTML = name;
+
+    seats[player_index].appendChild(new_player);
+
+    display_message(`${name} will be playing from seat ${seat_no + 1}`);
+}
+
 //---------------------------------------------------------------------------------
 var gameSocket = null;
 MSG_SEP = ":";
 msg_handlers = {
     "chat": display_message,
-    "seat": save_my_seat,
     "newp": update_new_player,
+    "seat": update_players_seating,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -257,27 +280,40 @@ function display_message(msg) {
     document.getElementById("new_messages").innerHTML += newMsg;
 }
 
-function save_my_seat(seat_info) {
-    my_seat = parseInt(seat_info[0]);
-    active_playing = (seat_info[1] == 1);
+function save_my_seat(status, seat_no) {
+    active = (status == ACTIVE_PLAYER);
+    if (my_seat == seat_no && active_playing == active)
+        return;
+    active_playing = active;
+    my_seat = seat_no;
     if (active_playing)
-        display_message(`Ready to play as ${my_name} in seat ${my_seat + 1}`)
+        display_message(`Playing as ${my_name} in seat ${my_seat + 1}`)
     else
         display_message(`Viewing the game from seat ${my_seat + 1}`)
 }
 
 function update_new_player(newp_info) {
-    new_player_seat_no = parseInt(newp_info[1]);
-    if (my_seat == new_player_seat_no)
-        return;
+    new_player_name = newp_info[0];
+    new_player_status = parseInt(newp_info[1])
+    new_player_seat_no = parseInt(newp_info[2]);
 
-    player_index = new_player_seat_no - my_seat;
-    if (player_index < 0)
-        player_index = total_seats + player_index;
-    
-    new_player = document.getElementById("player_template").cloneNode(true);
-    new_player.children["player_name"].innerHTML = newp_info[0];
-    new_player.style.visibility = "visible";
+    if (new_player_name == my_name)
+        return save_my_seat(new_player_status, new_player_seat_no);
+    if (new_player_status != ACTIVE_PLAYER)
+        return display_message(`${new_player_name} joined as a spectator`);
 
-    seats[player_index].appendChild(new_player);
+    assign_player_to_seat(new_player_name, new_player_seat_no);
+}
+
+function update_players_seating(seat_info) {
+    for (i=0; i<seat_info.length; i+=3) {
+        if (seat_info[i] == my_name) {
+            save_my_seat(parseInt(seat_info[i+1]), parseInt(seat_info[i+2]));
+            break;
+        }
+    }
+    for (i=0; i<seat_info.length; i+=3) {
+        if (seat_info[i] != my_name && parseInt(seat_info[i+1]) == ACTIVE_PLAYER)
+            assign_player_to_seat(seat_info[i], parseInt(seat_info[i+2]));
+    }
 }
