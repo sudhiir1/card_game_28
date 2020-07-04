@@ -17,6 +17,7 @@ class GamePlayer:
         self.table = table
         self.seat = NO_SEAT
         self.status = PlayerStatus.InActive
+        self.turn = True
 
 
     def accept_connection(self, send_conn, seat, status):

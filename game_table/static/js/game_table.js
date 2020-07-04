@@ -240,7 +240,7 @@ function assign_player_to_seat(name, seat_no) {
 
     seats[player_index].appendChild(new_player);
 
-    display_message(`${name} will be playing from seat ${seat_no + 1}`);
+    display_message(`${name} is playing from seat ${seat_no + 1}`);
 }
 
 //---------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ function initiate_connection(my_table, my_name) {
 
 function sendChatMessage() { 
     chat_msg = document.getElementById("chat_input").value;
-    gameSocket.send(chat_msg);
+    gameSocket.send("chat:" + chat_msg);
     document.getElementById("chat_input").value = "";
 }
               
@@ -297,11 +297,13 @@ function update_new_player(newp_info) {
     new_player_status = parseInt(newp_info[1])
     new_player_seat_no = parseInt(newp_info[2]);
 
-    if (new_player_name == my_name)
+    if (new_player_name == my_name) {
+        if (new_player_status == ACTIVE_PLAYER)
+            gameSocket.send("redy:");
         return save_my_seat(new_player_status, new_player_seat_no);
+    }
     if (new_player_status != ACTIVE_PLAYER)
         return display_message(`${new_player_name} joined as a spectator`);
-
     assign_player_to_seat(new_player_name, new_player_seat_no);
 }
 

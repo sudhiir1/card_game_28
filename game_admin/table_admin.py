@@ -1,6 +1,9 @@
 import logging
+import random
+
 from game_admin.common import *
 from game_admin.game_player import GamePlayer, PlayerStatus
+from game_admin.game_functions  import GameController
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +15,16 @@ class TableAdmin:
         self.table_number = table_number
         self.players = {}
         self.seats = [None] * num_seats
+        self.game = GameController(self)
+        
+        self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
+        if num_seats == 6:
+            self.deck.append("S6,H6,C6,D6".split(","))
+        self.dealer_index = random.randrange(num_seats)
+        self.round_start_index = self.next_player_index(self.dealer_index)
+        self.bidder = None
+        self.trump_card = None
+        self.game_status = GameStatus.GameWaiting
 
     def add_player(self, player_name, player_conn):
         new_player = None
@@ -33,7 +46,9 @@ class TableAdmin:
         self.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player_name, SEP, player_status.value, SEP, seat_no))
 
         self.send_current_players_info(new_player)
-        
+
+        # self.game.process_message(new_player, "{0}{1}".format("redy", SEP))
+     
         return new_player
 
     def send_current_players_info(self, to_player):
@@ -55,6 +70,8 @@ class TableAdmin:
             return
         self.send_everyone("byep", "{0}{1}{2}".format(leaving_player.name, SEP, leaving_player.seat))
 
+        self.game.process_message(leaving_player, "{0}{1}".format("byep", SEP))
+
     def send_everyone(self, msg_type, msg):
         for _, player in self.players.items():
             if player.status != PlayerStatus.InActive:
@@ -63,7 +80,7 @@ class TableAdmin:
 
     def assign_seat(self, player):
         if not self.players.get(player.name) is None and self.seats[player.seat] is None:
-            log.info("Assigning {} to seat number {}".format(new_player.name, new_player.seat))
+            log.info("Assigning {0} to seat number {1}".format(new_player.name, new_player.seat))
             self.seats[player.seat] = player
             return player.seat, PlayerStatus.Active
 
@@ -89,7 +106,19 @@ class TableAdmin:
 
     def process_new_message(self, player, msg):
         if msg.startswith("chat:"):
-            self.send_everyone("chat", "{}::{}".format(player.name, msg[5:])) # strip 'chat:' from msg
+            self.send_everyone("chat", "{0}{1}{2}".format(player.name, SEP, msg[5:])) # strip 'chat:' from msg
+        else:
+            self.game.process_message(player, msg)
+
+    def set_players_turn(self, enable):
+        for seat in self.seats:
+            seat.turn = enable
+
+    def next_player_index(self, player_index):
+        if player_index == len(self.seats) - 1:
+            return 0
+
+        return player_index + 1
 
     @classmethod
     def accept_player(cls, table_number, player_name, player_conn):
