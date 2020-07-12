@@ -18,7 +18,7 @@ async def websocket_application(scope, receive, send):
             break
 
         elif event['type'] == 'websocket.receive':
-            player.table.process_new_message(player.name, event['text'])
+            player.table.process_new_message(player, event['text'])
 
 def accept_new_connection(query_string, player_conn):
     player_info_list = query_string.decode().replace('&', '=').split('=')

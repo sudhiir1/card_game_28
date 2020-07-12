@@ -250,6 +250,7 @@ msg_handlers = {
     "chat": display_message,
     "newp": update_new_player,
     "seat": update_players_seating,
+    "stat": show_status_popup,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -318,4 +319,8 @@ function update_players_seating(seat_info) {
         if (seat_info[i] != my_name && parseInt(seat_info[i+1]) == ACTIVE_PLAYER)
             assign_player_to_seat(seat_info[i], parseInt(seat_info[i+2]));
     }
+}
+
+function show_status_popup(game_info) {
+    gameSocket.send("strt:");
 }

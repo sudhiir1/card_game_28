@@ -80,7 +80,7 @@ class TableAdmin:
 
     def assign_seat(self, player):
         if not self.players.get(player.name) is None and self.seats[player.seat] is None:
-            log.info("Assigning {0} to seat number {1}".format(new_player.name, new_player.seat))
+            log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
             self.seats[player.seat] = player
             return player.seat, PlayerStatus.Active
 

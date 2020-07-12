@@ -18,29 +18,40 @@ class GameController:
         self.game_commands = self.setup_game_commands()
 
     def setup_game_states(self):
-        wait_for_full_table = WaitForFullTable()
-        wait_for_all_say_start = WaitForAllSayStart()
+        wait_for_full_table = WaitForFullTable("redy")
+        wait_for_all_say_start = WaitForAllSayStart("strt")
+        deal_cards = DealCardsToAll("deal")
 
         game_states = {
             "redy": wait_for_full_table.setup(wait_for_all_say_start), # | showStatuspopu
-            # "strt": WaitForAllSayStart(), # | deal, send bid ready(1 player)
-            # "deal": ProcessDealing(), # send bid popup, get bid, send bid ready(next player) | ask trump
+            "strt": wait_for_all_say_start.setup(deal_cards), # | deal, send bid ready(1 player)
+            "deal": deal_cards.setup(deal_cards), # send bid popup, get bid, send bid ready(next player) | ask trump
             # "trmp": WaitForTrumpDown(), # identify trumper | deal, send bid ready (bidder+next) / send round start (dealer+next)
             # "plyd": WaitForCardPlay(), # record card, send next player / calc high card, assign to team | show status popup
         }
         return game_states
 
     def setup_game_commands(self):
+        process_player_exit = ProcessPlayerExit()
         game_commands = {
-            "byep": ProcessPlayerExit().setup(self.game_states["redy"]),
+            "byep": process_player_exit.setup(self.game_states["redy"]),
         }
         return game_commands
 
     def process_message(self, player, msg):
-        log.info("New message from {0}-{1}: {2}".format(self.table.table_number, player.name, msg))
+        log.info("New message in Table {0} from {1}: {2}".format(self.table.table_number, player.name, msg))
         msg_arr = msg.split(SEP)
+        cmd = msg_arr[0]
 
-        self.play_next(player, msg_arr)
+        if self.game_commands.get(cmd) is not None:
+            game_command = self.game_commands[cmd]
+            return game_command.action(self.table, player, msg)
+
+        if self.game_states.get(cmd) is not None:
+            if cmd == self.game_state.cmd:
+                return self.play_next(player, msg_arr)
+
+        log.warn("Unexpected message in Table {0} from {1}. Message: {2}. Expected:{3}".format(self.table.table_number, player.name, msg, self.game_state.cmd))
 
     def play_next(self, player, msg):
         cmd = msg[0]
@@ -53,8 +64,8 @@ class GameController:
         self.game_state = next_game_state
 
 class GameState:
-    def __init__(self):
-        pass
+    def __init__(self, cmd):
+        self.cmd = cmd
 
     def setup(self, next_state):
         return self
@@ -66,8 +77,8 @@ class GameState:
         return None
 
 class WaitForFullTable(GameState):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cmd):
+        super().__init__(cmd)
 
     def setup(self, next_state):
         self.wait_start_state = next_state
@@ -83,6 +94,10 @@ class WaitForFullTable(GameState):
 
 class WaitForAllSayStart(GameState):
 
+    def setup(self, next_state):
+        self.deal_card_state = next_state
+        return self
+
     def init_game_state(self, table, prev_state):
         log.debug("Sending every one to open status popup..")
         table.send_everyone("stat", "")
@@ -93,21 +108,29 @@ class WaitForAllSayStart(GameState):
             if seat is None or seat.turn:
                 log.info("Waiting for others to say start")
                 return self
-        return self
+        return self.deal_card_state
 
 class ProcessPlayerExit():
     def setup(self, next_state):
         self.wait_full_table = next_state
 
+        return self
+
     def action(self, table, player, msg):
-        pass
+        log.info("Processing {0} exit from Table {1}".format(player, table.table_number))
+        if player.status == PlayerStatus.Active:
+            return self.wait_full_table
 
-
-def deal_cards(table):
+class DealCardsToAll(GameState):
     # send each player cards: dealer_index+1: 4/3 cards
     
     #seats[dealer_index+1].turn = True
-    return wait_for_bidding_request
+    # return wait_for_bidding_request
+    def setup(self, next_state):
+        self.wait_for_bidding_request = next_state
+
+    def action(self, table, player, msg):
+        pass
 
 
 def wait_for_bidding_request(table, player, msg):
