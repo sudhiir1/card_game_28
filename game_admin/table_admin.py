@@ -27,29 +27,28 @@ class TableAdmin:
         self.game_status = GameStatus.GameWaiting
 
     def add_player(self, player_name, player_conn):
-        new_player = None
-        if not self.players.get(player_name) is None:
-            if  self.players[player_name].status != PlayerStatus.InActive:
-                log.warn("One {} already playing in table_{}".format(player_name, self.table_number))
-                return None # Todo: accept connection, send error and close connection/redirect
-            else:
-                log.info("{} joining back".format(player_name))
-                new_player = self.players[player_name]
-        else:
+        new_player = player = self.check_returning_player(player_name)
+        
+        if new_player is None:
             log.info("{} is new to the table".format(player_name))
             new_player = GamePlayer(player_name, self)
 
         seat_no, player_status = self.assign_seat(new_player)
         new_player.accept_connection(player_conn, seat_no, player_status)
 
-        log.info("Adding player to seat {} of the table_{}. Welcome {}".format(seat_no, self.table_number, player_name))
-        self.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player_name, SEP, player_status.value, SEP, seat_no))
-
-        self.send_current_players_info(new_player)
-
-        # self.game.process_message(new_player, "{0}{1}".format("redy", SEP))
+        self.process_new_message(new_player, "{0}{1}{2}".format("newp", SEP, int(player is None)))
      
         return new_player
+
+    def check_returning_player(self, player_name):
+        if self.players.get(player_name) is None:
+            return None
+        if  self.players[player_name].status != PlayerStatus.InActive:
+            log.warn("One {} already playing in table_{}".format(player_name, self.table_number))
+            return None # Todo: accept connection, send error and close connection/redirect
+
+        log.info("{} joining back".format(player_name))
+        return self.players[player_name]
 
     def send_current_players_info(self, to_player):
         player_info = ""
@@ -69,8 +68,6 @@ class TableAdmin:
             TableAdmin.tables.pop(self.table_number)
             return
         self.send_everyone("byep", "{0}{1}{2}".format(leaving_player.name, SEP, leaving_player.seat))
-
-        self.game.process_message(leaving_player, "{0}{1}".format("byep", SEP))
 
     def send_everyone(self, msg_type, msg):
         for _, player in self.players.items():
@@ -92,7 +89,6 @@ class TableAdmin:
         return NO_SEAT, PlayerStatus.Spectator
 
     def remove_player(self, leaving_player):
-        # self.players.pop(leaving_player.name)
         leaving_player.set_inactive()
 
         if leaving_player.seat != NO_SEAT:

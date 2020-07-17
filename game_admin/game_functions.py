@@ -4,6 +4,7 @@ import random
 from game_admin.common import *
 
 from game_admin.game_player import GamePlayer, PlayerStatus
+from game_admin.game_events import *
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class GameController:
         self.game_states = self.setup_game_states()
         self.game_state = self.game_states["redy"]
 
-        self.game_commands = self.setup_game_commands()
+        self.game_events = self.setup_game_events()
 
     def setup_game_states(self):
         wait_for_full_table = WaitForFullTable("redy")
@@ -31,27 +32,41 @@ class GameController:
         }
         return game_states
 
-    def setup_game_commands(self):
+    def setup_game_events(self):
+        process_player_join = ProcessPlayerJoin()
         process_player_exit = ProcessPlayerExit()
-        game_commands = {
+        game_events = {
+            "newp": process_player_join.setup(self.game_states["redy"]),
             "byep": process_player_exit.setup(self.game_states["redy"]),
         }
-        return game_commands
+        return game_events
 
     def process_message(self, player, msg):
         log.info("New message in Table {0} from {1}: {2}".format(self.table.table_number, player.name, msg))
         msg_arr = msg.split(SEP)
         cmd = msg_arr[0]
 
-        if self.game_commands.get(cmd) is not None:
-            game_command = self.game_commands[cmd]
-            return game_command.action(self.table, player, msg)
+        process_state = self.process_event(player, msg_arr)
+        if not process_state:
+            return
 
         if self.game_states.get(cmd) is not None:
             if cmd == self.game_state.cmd:
                 return self.play_next(player, msg_arr)
 
         log.warn("Unexpected message in Table {0} from {1}. Message: {2}. Expected:{3}".format(self.table.table_number, player.name, msg, self.game_state.cmd))
+
+    def process_event(self, player, msg):
+        cmd = msg[0]
+        if self.game_events.get(cmd) is None:
+            return True
+
+        game_event = self.game_events[cmd]
+        game_state, process_state = game_event.action(self.table, player, msg, self.game_state)
+        if game_state is not None:
+            self.game_state = game_state
+        
+        return process_state
 
     def play_next(self, player, msg):
         cmd = msg[0]
@@ -109,17 +124,6 @@ class WaitForAllSayStart(GameState):
                 log.info("Waiting for others to say start")
                 return self
         return self.deal_card_state
-
-class ProcessPlayerExit():
-    def setup(self, next_state):
-        self.wait_full_table = next_state
-
-        return self
-
-    def action(self, table, player, msg):
-        log.info("Processing {0} exit from Table {1}".format(player, table.table_number))
-        if player.status == PlayerStatus.Active:
-            return self.wait_full_table
 
 class DealCardsToAll(GameState):
     # send each player cards: dealer_index+1: 4/3 cards
