@@ -21,9 +21,9 @@ class TableAdmin:
         if num_seats == 6:
             self.deck.append("S6,H6,C6,D6".split(","))
         self.dealer_index = random.randrange(num_seats)
-        self.round_start_index = self.next_player_index(self.dealer_index)
-        self.bidder = None
-        self.trump_card = None
+        self.player_index = -1
+        self.bidder_index = -1
+        self.bid_point = -1
         self.game_status = GameStatus.GameWaiting
 
     def add_player(self, player_name, player_conn):
@@ -75,6 +75,10 @@ class TableAdmin:
                 player.send_message("{0}{1}{2}".format(msg_type, SEP, msg))
         log.info("Sent: {}:{}".format(msg_type, msg))
 
+    def set_everyones_turn(self, enable):
+        for seat in self.seats:
+            seat.turn = enable
+
     def assign_seat(self, player):
         if not self.players.get(player.name) is None and self.seats[player.seat] is None:
             log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
@@ -105,10 +109,6 @@ class TableAdmin:
             self.send_everyone("chat", "{0}{1}{2}".format(player.name, SEP, msg[5:])) # strip 'chat:' from msg
         else:
             self.game.process_message(player, msg)
-
-    def set_players_turn(self, enable):
-        for seat in self.seats:
-            seat.turn = enable
 
     def next_player_index(self, player_index):
         if player_index == len(self.seats) - 1:

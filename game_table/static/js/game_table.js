@@ -251,6 +251,8 @@ msg_handlers = {
     "newp": update_new_player,
     "seat": update_players_seating,
     "stat": show_status_popup,
+    "deal": deal_cards,
+    "shbd": bid_points,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -323,4 +325,12 @@ function update_players_seating(seat_info) {
 
 function show_status_popup(game_info) {
     gameSocket.send("strt:");
+}
+
+function deal_cards(game_info) {
+    gameSocket.send("delt:");
+}
+
+function bid_points(game_info) {
+    gameSocket.send("bdpt:" + int(game_info[0]) + 1);
 }

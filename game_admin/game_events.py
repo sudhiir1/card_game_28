@@ -13,9 +13,10 @@ class ProcessPlayerJoin():
 
     def action(self, table, player, msg, game_state):
         is_new = msg[1]
-        log.info("Adding player to seat {} of the table_{}. Welcome {}".format(player.seat, self.table_number, player.name))
-        self.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player.name, SEP, player.status.value, SEP, player.seat))
-
+        log.info("Adding player to seat {} of the table_{}. Welcome {}".format(player.seat, table.table_number, player.name))
+        table.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player.name, SEP, player.status.value, SEP, player.seat))
+        table.send_current_players_info(player)
+        
         if is_new:
             return None, False
 

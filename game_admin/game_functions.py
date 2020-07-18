@@ -5,6 +5,7 @@ from game_admin.common import *
 
 from game_admin.game_player import GamePlayer, PlayerStatus
 from game_admin.game_events import *
+from game_admin.game_states import *
 
 log = logging.getLogger(__name__)
 
@@ -20,13 +21,15 @@ class GameController:
 
     def setup_game_states(self):
         wait_for_full_table = WaitForFullTable("redy")
-        wait_for_all_say_start = WaitForAllSayStart("strt")
-        deal_cards = DealCardsToAll("deal")
+        wait_for_game_start = WaitForGameStart("strt")
+        deal_cards = DealCards("delt")
+        bid_points = BidPoints("bdpt")
 
         game_states = {
-            "redy": wait_for_full_table.setup(wait_for_all_say_start), # | showStatuspopu
-            "strt": wait_for_all_say_start.setup(deal_cards), # | deal, send bid ready(1 player)
-            "deal": deal_cards.setup(deal_cards), # send bid popup, get bid, send bid ready(next player) | ask trump
+            "redy": wait_for_full_table.setup(wait_for_game_start), # | showStatuspopu
+            "strt": wait_for_game_start.setup(deal_cards), # | deal, send bid ready(1 player)
+            "delt": deal_cards.setup(bid_points), # send bid popup, get bid, send bid ready(next player) | ask trump
+            "bdpt": bid_points.setup(deal_cards), # send bid popup, get bid, send bid ready(next player) | ask trump
             # "trmp": WaitForTrumpDown(), # identify trumper | deal, send bid ready (bidder+next) / send round start (dealer+next)
             # "plyd": WaitForCardPlay(), # record card, send next player / calc high card, assign to team | show status popup
         }
@@ -77,64 +80,6 @@ class GameController:
 
         next_game_state.init_game_state(self.table, self.game_state)
         self.game_state = next_game_state
-
-class GameState:
-    def __init__(self, cmd):
-        self.cmd = cmd
-
-    def setup(self, next_state):
-        return self
-
-    def init_game_state(self, table, prev_state):
-        pass
-
-    def action(self, table, player, msg):
-        return None
-
-class WaitForFullTable(GameState):
-    def __init__(self, cmd):
-        super().__init__(cmd)
-
-    def setup(self, next_state):
-        self.wait_start_state = next_state
-        return self
-
-    def action(self, table, player, msg):
-        for seat in reversed(table.seats):
-            if seat is None:
-                log.info("Waiting for full table at Table {0}".format(table.table_number))
-                return self
-
-        return self.wait_start_state
-
-class WaitForAllSayStart(GameState):
-
-    def setup(self, next_state):
-        self.deal_card_state = next_state
-        return self
-
-    def init_game_state(self, table, prev_state):
-        log.debug("Sending every one to open status popup..")
-        table.send_everyone("stat", "")
-        
-    def action(self, table, player, msg):
-        player.turn = False
-        for seat in table.seats:
-            if seat is None or seat.turn:
-                log.info("Waiting for others to say start")
-                return self
-        return self.deal_card_state
-
-class DealCardsToAll(GameState):
-    # send each player cards: dealer_index+1: 4/3 cards
-    
-    #seats[dealer_index+1].turn = True
-    # return wait_for_bidding_request
-    def setup(self, next_state):
-        self.wait_for_bidding_request = next_state
-
-    def action(self, table, player, msg):
-        pass
 
 
 def wait_for_bidding_request(table, player, msg):
