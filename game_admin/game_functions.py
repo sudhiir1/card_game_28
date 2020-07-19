@@ -24,12 +24,16 @@ class GameController:
         wait_for_game_start = WaitForGameStart("strt")
         deal_cards = DealCards("delt")
         bid_points = BidPoints("bdpt")
+        keep_trump = KeepTrumpCard("trmd")
+        play_cards = PlayCards("card")
 
         game_states = {
-            "redy": wait_for_full_table.setup(wait_for_game_start), # | showStatuspopu
-            "strt": wait_for_game_start.setup(deal_cards), # | deal, send bid ready(1 player)
-            "delt": deal_cards.setup(bid_points), # send bid popup, get bid, send bid ready(next player) | ask trump
-            "bdpt": bid_points.setup(deal_cards), # send bid popup, get bid, send bid ready(next player) | ask trump
+            "redy": wait_for_full_table.setup([wait_for_game_start]),
+            "strt": wait_for_game_start.setup([deal_cards]),
+            "delt": deal_cards.setup([bid_points]),
+            "bdpt": bid_points.setup([keep_trump]),
+            "trmd": keep_trump.setup([deal_cards, play_cards]),
+            "card": play_cards.setup([wait_for_game_start])
             # "trmp": WaitForTrumpDown(), # identify trumper | deal, send bid ready (bidder+next) / send round start (dealer+next)
             # "plyd": WaitForCardPlay(), # record card, send next player / calc high card, assign to team | show status popup
         }

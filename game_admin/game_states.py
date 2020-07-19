@@ -10,7 +10,7 @@ class GameState:
     def __init__(self, cmd):
         self.cmd = cmd
 
-    def setup(self, next_state):
+    def setup(self, next_states):
         return self
 
     def init_game_state(self, table, prev_state):
@@ -23,8 +23,8 @@ class WaitForFullTable(GameState):
     def __init__(self, cmd):
         super().__init__(cmd)
 
-    def setup(self, next_state):
-        self.wait_start_state = next_state
+    def setup(self, next_states):
+        self.wait_start_state = next_states[0]
         return self
 
     def action(self, table, player, msg):
@@ -37,8 +37,8 @@ class WaitForFullTable(GameState):
 
 class WaitForGameStart(GameState):
 
-    def setup(self, next_state):
-        self.deal_card_state = next_state
+    def setup(self, next_states):
+        self.deal_state = next_states[0]
         return self
 
     def init_game_state(self, table, prev_state):
@@ -52,11 +52,11 @@ class WaitForGameStart(GameState):
             if seat is None or seat.turn:
                 log.info("Waiting for others to say start")
                 return self
-        return self.deal_card_state
+        return self.deal_state
 
 class DealCards(GameState):
-    def setup(self, next_state):
-        self.bidding_state = next_state
+    def setup(self, next_states):
+        self.bidding_state = next_states[0]
         return self
 
     def init_game_state(self, table, prev_state):
@@ -74,8 +74,8 @@ class DealCards(GameState):
         return self.bidding_state
 
 class BidPoints(GameState):
-    def setup(self, next_state):
-        self.bidding_state = next_state
+    def setup(self, next_states):
+        self.keep_trump_state = next_states[0]
         return self
 
     def init_game_state(self, table, prev_state):
@@ -83,20 +83,52 @@ class BidPoints(GameState):
             table.bidder_index = table.next_player_index(table.dealer_index)
             table.bid_point = 14
 
-        self.send_bidding_message(table)
+        self.send_bidding_message(table, table.seats[table.bidder_index], table.bid_point)
 
     def action(self, table, player, msg):
         table.bid_point = int(msg[1])
+        if table.bid_point == 20:
+            return self.keep_trump_state
         if table.bid_point == 28:
-            return self
+            return self.keep_trump_state
         table.seats[table.bidder_index].turn = False
         table.bidder_index = table.next_player_index(table.bidder_index)
 
-        self.send_bidding_message(table)
+        self.send_bidding_message(table, table.seats[table.bidder_index], table.bid_point)
         return self
 
-    def send_bidding_message(self, table):
-        bidder = table.seats[table.bidder_index]
-        log.info("Inviting {0} for {1} point bidding on table {2}".format(bidder.name, table.bid_point, table.table_number))
+    def send_bidding_message(self, table, bidder, bid_point):
+        log.info("Inviting {0} for {1} point bidding on table {2}".format(bidder.name, bid_point, table.table_number))
         bidder.turn = True
-        bidder.send_message("shbd{0}{1}".format(SEP, table.bid_point))
+        bidder.send_message("shbd{0}{1}".format(SEP, bid_point))
+
+class KeepTrumpCard(GameState):
+    def setup(self, next_states):
+        self.deal_state = next_states[0]
+        self.play_state = next_states[1]
+        return self
+
+    def init_game_state(self, table, prev_state):
+        bidder = table.seats[table.bidder_index]
+        bidder.send_message("ktrm{0}".format(SEP))
+
+    def action(self, table, player, msg):
+        log.info("{0} kept trump on table {1}".format(player.name, table.table_number))
+        if table.bid_point == 20:
+            return self.deal_state
+        else:
+            return self.play_state
+
+        return self
+
+
+class PlayCards(GameState):
+    def setup(self, next_states):
+        self.wait_start_state = next_states[0]
+        return self
+
+    def init_game_state(self, table, prev_state):
+        pass
+
+    def action(self, table, player, msg):
+        return self

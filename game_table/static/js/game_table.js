@@ -253,6 +253,7 @@ msg_handlers = {
     "stat": show_status_popup,
     "deal": deal_cards,
     "shbd": bid_points,
+    "ktrm": keep_trump_card,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -332,5 +333,11 @@ function deal_cards(game_info) {
 }
 
 function bid_points(game_info) {
-    gameSocket.send("bdpt:" + int(game_info[0]) + 1);
+    display_message(`Bidding ${parseInt(game_info[0]) + 1} points`)
+    gameSocket.send("bdpt:" + (parseInt(game_info[0]) + 1));
+}
+
+function keep_trump_card(game_info) {
+    display_message(`Keeing Trump card`)
+    gameSocket.send("trmd:");
 }
