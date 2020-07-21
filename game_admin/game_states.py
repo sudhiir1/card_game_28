@@ -54,8 +54,13 @@ class WaitForGameStart(GameState):
                 log.info("Waiting for others to say start")
                 return self
 
-        random.shuffle(table.deck)
+        self.prep_for_new_game(table)
         return self.deal_state
+
+    def prep_for_new_game(self, table):
+        random.shuffle(table.deck)
+        table.dealer_index = random.randrange(table.num_seats)
+        table.bidder_index = -1
 
 class DealCards(GameState):
     def setup(self, next_states):
@@ -66,9 +71,11 @@ class DealCards(GameState):
         cards_to_deal = 3 if len(table.seats) == 6 else 4
         log.info("Dealing every one {0} cards each on table {1}".format(cards_to_deal, table.table_number))
         table.set_everyones_turn(True)
-        # send each player cards: dealer_index+1: 4/3 cards
-        for seat in table.seats:
-            seat.deal_cards(table.deck[:cards_to_deal])
+
+        deal_index = table.dealer_index
+        for i in range(table.num_seats):
+            deal_index = table.next_player_index(deal_index)
+            table.seats[deal_index].deal_cards(table.deck[:cards_to_deal], i)
             del table.deck[:cards_to_deal]
 
     def action(self, table, player, msg):
@@ -85,29 +92,34 @@ class BidPoints(GameState):
         return self
 
     def init_game_state(self, table, prev_state):
-        if table.bidder_index == -1:
-            table.bidder_index = table.next_player_index(table.dealer_index)
-            table.bid_point = 14
-
-        self.send_bidding_message(table, table.seats[table.bidder_index], table.bid_point)
-        table.send_everyone("chat", "Waiting for bidding from {0}".format(table.seats[table.bidder_index].player))
+        bidder_index = table.bidder_index
+        if bidder_index == -1:
+            bidder_index = table.dealer_index
+            table.bid_point = -1
+        bidder_index = table.next_player_index(bidder_index)
+        bidding_seat = table.seats[bidder_index]
+        self.send_bidding_message(table, bidding_seat, table.bid_point)
 
     def action(self, table, player, msg):
-        table.bid_point = int(msg[1])
-        if table.bid_point == 20:
-            return self.keep_trump_state
-        if table.bid_point == 28:
-            return self.keep_trump_state
-        table.seats[table.bidder_index].turn = False
-        table.bidder_index = table.next_player_index(table.bidder_index)
+        bid_point = int(msg[1])
+        table.seats[player.seat].turn = False
+        if bid_point != -1:
+            table.bid_point = bid_point
+            table.bidder_index = player.seat
+            table.send_everyone("chat", "{0} bid for {0}".format(player.name, bid_point))
 
-        self.send_bidding_message(table, table.seats[table.bidder_index], table.bid_point)
+        new_bidder_index = table.next_player_index(player.seat)
+        if new_bidder_index == table.bidder_index:
+            return self.keep_trump_state
+
+        self.send_bidding_message(table, table.seats[new_bidder_index], table.bid_point)
         return self
 
     def send_bidding_message(self, table, bidder_seat, bid_point):
-        log.info("Inviting {0} for {1} point bidding on table {2}".format(bidder_seat.player.name, bid_point, table.table_number))
+        log.info("Inviting {0} for bid from {1} point on table {2}".format(bidder_seat.player.name, bid_point, table.table_number))
         bidder_seat.turn = True
         bidder_seat.player.send_message("shbd{0}{1}".format(SEP, bid_point))
+        table.send_everyone("chat", "Waiting for bidding from {0}".format(bidder_seat.player.name))
 
 class KeepTrumpCard(GameState):
     def setup(self, next_states):
@@ -121,12 +133,10 @@ class KeepTrumpCard(GameState):
 
     def action(self, table, player, msg):
         log.info("{0} kept trump on table {1}".format(player.name, table.table_number))
-        if table.bid_point == 20:
-            return self.deal_state
-        else:
+        if len(table.deck) == 0:
             return self.play_state
-
-        return self
+        else:
+            return self.deal_state
 
 
 class PlayCards(GameState):

@@ -8,26 +8,28 @@ from game_admin.game_functions  import GameController
 log = logging.getLogger(__name__)
 
 class Chair:
-    def __init__(self, table):
+    def __init__(self, table, seat_no):
         self.table = table
+        self.seat_no = seat_no
         self.player = None
         self.turn = False
         self.cards = []
 
-    def deal_cards(self, cards):
+    def deal_cards(self, cards, deal_pos):
         self.cards.append(cards)
-        self.player.send_message("deal{0}{1}".format(SEP, ",".join(cards)))
+        self.player.send_message("deal{0}{1}{2}{3}".format(SEP, deal_pos, SEP, ",".join(cards)))
 
     @classmethod
     def addChairs(cls, table, num_chairs):
         chairs = []
         for i in range(num_chairs):
-            chairs.append(Chair(table))
+            chairs.append(Chair(table, i))
         return chairs
 
 class TableAdmin:
     def __init__(self, table_number, num_seats):
         self.table_number = table_number
+        self.num_seats = num_seats
         self.seats = Chair.addChairs(self, num_seats)
         self.gamers = {}
         self.game = GameController(self)
@@ -35,7 +37,7 @@ class TableAdmin:
         self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
         if num_seats == 6:
             self.deck.append("S6,H6,C6,D6".split(","))
-        self.dealer_index = random.randrange(num_seats)
+        self.dealer_index = -1
         self.player_index = -1
         self.bidder_index = -1
         self.bid_point = -1

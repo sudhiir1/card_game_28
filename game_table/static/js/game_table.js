@@ -332,7 +332,7 @@ function show_status_popup(game_info) {
 }
 
 function deal_cards(game_info) {
-    display_message(`Got cards: ${game_info[0]}`)
+    display_message(`Got cards: ${game_info[1]}. Animate from ${game_info[0]}`)
     gameSocket.send("delt:");
 }
 
