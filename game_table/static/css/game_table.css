@@ -27,8 +27,14 @@ body {
     width: 99.9%;
     height: 30%;
     overflow-x: hidden;
-    overflow-y: auto; 
+    overflow-y: hidden; 
     z-index: 15;
+}
+#new_messages {
+    width: 99.9%;
+    height: 75%;
+    overflow-x: hidden;
+    overflow-y: auto; 
 }
 .player {
     /* position: absolute; */

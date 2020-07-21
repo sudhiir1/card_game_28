@@ -1,4 +1,5 @@
 import logging
+import random
 
 from game_admin.common import *
 
@@ -52,6 +53,8 @@ class WaitForGameStart(GameState):
             if seat.player is None or seat.turn:
                 log.info("Waiting for others to say start")
                 return self
+
+        random.shuffle(table.deck)
         return self.deal_state
 
 class DealCards(GameState):
@@ -60,10 +63,13 @@ class DealCards(GameState):
         return self
 
     def init_game_state(self, table, prev_state):
-        log.info("Dealing every one {0} cards each on table {1}".format(len(table.seats), table.table_number))
+        cards_to_deal = 3 if len(table.seats) == 6 else 4
+        log.info("Dealing every one {0} cards each on table {1}".format(cards_to_deal, table.table_number))
         table.set_everyones_turn(True)
         # send each player cards: dealer_index+1: 4/3 cards
-        table.send_everyone("deal", "")
+        for seat in table.seats:
+            seat.deal_cards(table.deck[:cards_to_deal])
+            del table.deck[:cards_to_deal]
 
     def action(self, table, player, msg):
         table.seats[player.seat].turn = False
@@ -84,6 +90,7 @@ class BidPoints(GameState):
             table.bid_point = 14
 
         self.send_bidding_message(table, table.seats[table.bidder_index], table.bid_point)
+        table.send_everyone("chat", "Waiting for bidding from {0}".format(table.seats[table.bidder_index].player))
 
     def action(self, table, player, msg):
         table.bid_point = int(msg[1])

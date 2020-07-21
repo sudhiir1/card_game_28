@@ -14,6 +14,10 @@ class Chair:
         self.turn = False
         self.cards = []
 
+    def deal_cards(self, cards):
+        self.cards.append(cards)
+        self.player.send_message("deal{0}{1}".format(SEP, ",".join(cards)))
+
     @classmethod
     def addChairs(cls, table, num_chairs):
         chairs = []

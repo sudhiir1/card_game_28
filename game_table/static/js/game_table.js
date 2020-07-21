@@ -266,7 +266,10 @@ function initiate_connection(my_table, my_name) {
 
 function sendChatMessage() { 
     chat_msg = document.getElementById("chat_input").value;
-    gameSocket.send("chat:" + chat_msg);
+    if (chat_msg[4] == ':')
+        gameSocket.send(chat_msg);
+    else
+        gameSocket.send("chat:" + chat_msg);
     document.getElementById("chat_input").value = "";
 }
               
@@ -329,12 +332,13 @@ function show_status_popup(game_info) {
 }
 
 function deal_cards(game_info) {
+    display_message(`Got cards: ${game_info[0]}`)
     gameSocket.send("delt:");
 }
 
 function bid_points(game_info) {
-    display_message(`Bidding ${parseInt(game_info[0]) + 1} points`)
-    gameSocket.send("bdpt:" + (parseInt(game_info[0]) + 1));
+    //display_message(`Bidding ${parseInt(game_info[0]) + 1} points`)
+    //gameSocket.send("bdpt:" + (parseInt(game_info[0]) + 1));
 }
 
 function keep_trump_card(game_info) {
