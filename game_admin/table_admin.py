@@ -7,14 +7,28 @@ from game_admin.game_functions  import GameController
 
 log = logging.getLogger(__name__)
 
+class Chair:
+    def __init__(self, table):
+        self.table = table
+        self.player = None
+        self.turn = False
+        self.cards = []
+
+    @classmethod
+    def addChairs(cls, table, num_chairs):
+        chairs = []
+        for i in range(num_chairs):
+            chairs.append(Chair(table))
+        return chairs
+
 class TableAdmin:
 
     tables = {}
 
     def __init__(self, table_number, num_seats):
         self.table_number = table_number
+        self.seats = Chair.addChairs(self, num_seats)
         self.players = {}
-        self.seats = [None] * num_seats
         self.game = GameController(self)
         
         self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
@@ -50,11 +64,24 @@ class TableAdmin:
         log.info("{} joining back".format(player_name))
         return self.players[player_name]
 
+    def assign_seat(self, player):
+        if not self.players.get(player.name) is None and self.seats[player.seat].player is None:
+            log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
+            self.seats[player.seat].player = player
+            return player.seat, PlayerStatus.Active
+
+        self.players[player.name] = player
+        for i in range(len(self.seats)):
+            if self.seats[i].player is None:
+                self.seats[i].player = player
+                return i, PlayerStatus.Active
+        return NO_SEAT, PlayerStatus.Spectator
+        
     def send_current_players_info(self, to_player):
         player_info = ""
         for i in range(len(self.seats)):
-            if not self.seats[i] is None:
-                player = self.seats[i]
+            if not self.seats[i].player is None:
+                player = self.seats[i].player
                 player_info += "{0}{1}{2}{3}{4}{5}".format(SEP, player.name, SEP, player.status.value, SEP, i)
         if player_info != "":
             to_player.send_message("seat" + player_info)
@@ -79,24 +106,12 @@ class TableAdmin:
         for seat in self.seats:
             seat.turn = enable
 
-    def assign_seat(self, player):
-        if not self.players.get(player.name) is None and self.seats[player.seat] is None:
-            log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
-            self.seats[player.seat] = player
-            return player.seat, PlayerStatus.Active
-
-        self.players[player.name] = player
-        for i in range(len(self.seats)):
-            if self.seats[i] is None:
-                self.seats[i] = player
-                return i, PlayerStatus.Active
-        return NO_SEAT, PlayerStatus.Spectator
 
     def remove_player(self, leaving_player):
         leaving_player.set_inactive()
 
         if leaving_player.seat != NO_SEAT:
-            self.seats[leaving_player.seat] = None
+            self.seats[leaving_player.seat].player = None
 
     def check_anyone_playing(self):
         for _, player in self.players.items():
