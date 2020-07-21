@@ -22,13 +22,10 @@ class Chair:
         return chairs
 
 class TableAdmin:
-
-    tables = {}
-
     def __init__(self, table_number, num_seats):
         self.table_number = table_number
         self.seats = Chair.addChairs(self, num_seats)
-        self.players = {}
+        self.gamers = {}
         self.game = GameController(self)
         
         self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
@@ -40,37 +37,37 @@ class TableAdmin:
         self.bid_point = -1
         self.game_status = GameStatus.GameWaiting
 
-    def add_player(self, player_name, player_conn):
-        new_player = player = self.check_returning_player(player_name)
+    def add_player(self, name, conn):
+        new_player = player = self.check_returning_player(name)
         
         if new_player is None:
-            log.info("{} is new to the table".format(player_name))
-            new_player = GamePlayer(player_name, self)
+            log.info("{} is new to the table".format(name))
+            new_player = GamePlayer(name, self)
 
         seat_no, player_status = self.assign_seat(new_player)
-        new_player.accept_connection(player_conn, seat_no, player_status)
+        new_player.accept_connection(conn, seat_no, player_status)
 
         self.process_new_message(new_player, "{0}{1}{2}".format("newp", SEP, int(player is None)))
      
         return new_player
 
-    def check_returning_player(self, player_name):
-        if self.players.get(player_name) is None:
+    def check_returning_player(self, name):
+        if self.gamers.get(name) is None:
             return None
-        if  self.players[player_name].status != PlayerStatus.InActive:
-            log.warn("One {} already playing in table_{}".format(player_name, self.table_number))
+        if  self.gamers[name].status != PlayerStatus.InActive:
+            log.warn("One {} already playing in table_{}".format(name, self.table_number))
             return None # Todo: accept connection, send error and close connection/redirect
 
-        log.info("{} joining back".format(player_name))
-        return self.players[player_name]
+        log.info("{} joining back".format(name))
+        return self.gamers[name]
 
     def assign_seat(self, player):
-        if not self.players.get(player.name) is None and self.seats[player.seat].player is None:
+        if not self.gamers.get(player.name) is None and self.seats[player.seat].player is None:
             log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
             self.seats[player.seat].player = player
             return player.seat, PlayerStatus.Active
 
-        self.players[player.name] = player
+        self.gamers[player.name] = player
         for i in range(len(self.seats)):
             if self.seats[i].player is None:
                 self.seats[i].player = player
@@ -97,7 +94,7 @@ class TableAdmin:
         self.send_everyone("byep", "{0}{1}{2}".format(leaving_player.name, SEP, leaving_player.seat))
 
     def send_everyone(self, msg_type, msg):
-        for _, player in self.players.items():
+        for _, player in self.gamers.items():
             if player.status != PlayerStatus.InActive:
                 player.send_message("{0}{1}{2}".format(msg_type, SEP, msg))
         log.info("Sent: {}:{}".format(msg_type, msg))
@@ -114,7 +111,7 @@ class TableAdmin:
             self.seats[leaving_player.seat].player = None
 
     def check_anyone_playing(self):
-        for _, player in self.players.items():
+        for _, player in self.gamers.items():
             if player.status != PlayerStatus.InActive:
                 return True
         return False
@@ -131,6 +128,8 @@ class TableAdmin:
 
         return player_index + 1
 
+
+    tables = {}
     @classmethod
     def accept_player(cls, table_number, player_name, player_conn):
         table_number = int(table_number)
@@ -148,7 +147,7 @@ class TableAdmin:
 
 
     # def send_everyone_except(self, this_player, source_name, msg):
-    #     for id, player in self.players.items():
+    #     for id, player in self.gamers.items():
     #         if not player is this_player:
     #             player.send_message("{}: {}".format(source_name, msg))
     #     log.info("Send except {}: {}: {}".format(this_player.name, source_name, msg))
