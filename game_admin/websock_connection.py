@@ -21,6 +21,7 @@ async def websocket_application(scope, receive, send):
         elif event['type'] == 'websocket.receive':
             player.table.process_new_message(player, event['text'])
 
+
 def accept_new_connection(query_string, player_conn):
     player_info_list = query_string.decode().replace('&', '=').split('=')
     if len(player_info_list) <  4:

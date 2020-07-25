@@ -41,7 +41,8 @@ class TableAdmin:
         self.player_index = -1
         self.bidder_index = -1
         self.bid_point = -1
-        self.game_status = GameStatus.GameWaiting
+        self.evenTeamCards = []
+        self.oddTeamCards = []
 
     def add_player(self, name, conn):
         new_player = player = self.check_returning_player(name)

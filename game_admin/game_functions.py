@@ -16,6 +16,7 @@ class GameController:
 
         self.game_states = self.setup_game_states()
         self.game_state = self.game_states["redy"]
+        self.game_state.init_game_state(self.table, None)
 
         self.game_events = self.setup_game_events()
 
@@ -55,6 +56,10 @@ class GameController:
 
         process_state = self.process_event(player, msg_arr)
         if not process_state:
+            return
+
+        if not self.table.seats[player.seat].turn:
+            log.warn("Ignoring {0} command from {1} as it is not this players turn".format(msg, player.name))
             return
 
         if self.game_states.get(cmd) is not None:

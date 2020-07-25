@@ -17,7 +17,7 @@ my_name = "";
 function intializePage(table, num_seats, name) {
     my_table = table;
     my_name = name;
-    //addNewCards("");
+    addNewCards("");
     setup_table(num_seats);
 
     initiate_connection(table, name);
@@ -254,6 +254,7 @@ msg_handlers = {
     "deal": deal_cards,
     "shbd": bid_points,
     "ktrm": keep_trump_card,
+    "play": play_card,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -342,6 +343,11 @@ function bid_points(game_info) {
 }
 
 function keep_trump_card(game_info) {
-    display_message(`Keeing Trump card`)
-    gameSocket.send("trmd:");
+    // display_message(`Keeping Trump card`)
+    // gameSocket.send("trmd:");
+}
+
+function play_card(game_info) {
+    // display_message(`Keeping Trump card`)
+    // gameSocket.send("trmd:");
 }
