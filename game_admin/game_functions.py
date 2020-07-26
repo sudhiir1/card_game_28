@@ -87,6 +87,7 @@ class GameController:
         if next_game_state is self.game_state:
             return
 
+        log.info("Changing state from {0} to {1}".format(self.game_state.cmd, next_game_state.cmd))
         next_game_state.init_game_state(self.table, self.game_state)
         self.game_state = next_game_state
 

@@ -103,8 +103,8 @@ class TableAdmin:
     def send_everyone(self, msg_type, msg):
         for _, player in self.gamers.items():
             if player.status != PlayerStatus.InActive:
-                player.send_message("{0}{1}{2}".format(msg_type, SEP, msg))
-        log.info("Sent: {}:{}".format(msg_type, msg))
+                player.send_message("{0}{1}{2}".format(msg_type, SEP, msg), False)
+        log.info("Sent Everyone: {}:{}".format(msg_type, msg))
 
     def set_everyones_turn(self, enable):
         for seat in self.seats:
@@ -134,6 +134,11 @@ class TableAdmin:
             return 0
 
         return player_index + 1
+
+    def assign_card_to_team(self, cards_played):
+        for seat_index, card in cards_played.items():
+            log.info("{0} played {1}".format(self.seats[seat_index].player.name, card))
+        return next(iter(cards_played))
 
 
     tables = {}

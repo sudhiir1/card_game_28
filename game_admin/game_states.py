@@ -117,7 +117,7 @@ class BidPoints(GameState):
             table.send_everyone("chat", "{0} bid for {1}".format(player.name, bid_point))
 
         new_bidder_index = table.next_player_index(player.seat)
-        if new_bidder_index == table.bidder_index:
+        if new_bidder_index == table.bidder_index: # any bidding this round, else play
             return self.keep_trump_state
 
         self.send_bidding_message(table, table.seats[new_bidder_index], table.bid_point)
@@ -139,6 +139,7 @@ class KeepTrumpCard(GameState):
         bidder_seat = table.seats[table.bidder_index]
         bidder_seat.turn = True
         bidder_seat.player.send_message("ktrm{0}".format(SEP))
+        table.send_everyone("chat", "Waiting on {0} to keep trump card".format(bidder_seat.player.name))
 
     def action(self, table, player, msg):
         table.seats[player.seat].turn = False
@@ -150,28 +151,45 @@ class KeepTrumpCard(GameState):
 
 
 class PlayCards(GameState):
+    def __init__(self, cmd):
+        super().__init__(cmd)
+        self.cards_this_round = {}
+
     def setup(self, next_states):
         self.wait_start_state = next_states[0]
         return self
 
     def init_game_state(self, table, prev_state):
-        player_index = table.player_index
-        if player_index == -1:
-            player_index = table.dealer_index
-        player_index = table.next_player_index(player_index)
-        playing_seat = table.seats[player_index]
+        play_index = table.player_index
+        if play_index == -1:
+            play_index = table.dealer_index
+            self.cards_this_round = {}
+        table.player_index = table.next_player_index(play_index)
+        playing_seat = table.seats[table.player_index]
         self.send_play_message(table, playing_seat)
 
     def action(self, table, player, msg):
-        card = int(msg[1])
+        card = msg[1]
         table.send_everyone("chat", "{0} played {1}".format(player.name, card))
 
         table.seats[player.seat].turn = False
-        # assign cards to tam
+        table.player_index = self.process_card_played(table, player, card)
 
-        new_player_index = table.next_player_index(player.seat)
-        if new_bidder_index == table.bidder_index:
-            return self.keep_trump_state
-
-        self.send_bidding_message(table, table.seats[new_bidder_index], table.bid_point)
+        playing_seat = table.seats[table.player_index]
+        self.send_play_message(table, playing_seat)
         return self
+
+    def send_play_message(self, table, player_seat):
+        log.info("Inviting {0} for play a card on table {1}".format(player_seat.player.name, table.table_number))
+        player_seat.turn = True
+        player_seat.player.send_message("play{0}".format(SEP))
+        table.send_everyone("chat", "Waiting on {0} to play a card".format(player_seat.player.name))
+
+    def process_card_played(self, table, player, card):
+        self.cards_this_round[player.seat] = card
+        player_index = table.next_player_index(player.seat)
+        if len(self.cards_this_round) == len(table.seats):
+            player_index = table.assign_card_to_team(self.cards_this_round)
+            self.cards_this_round = {}
+
+        return player_index
