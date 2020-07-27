@@ -65,6 +65,7 @@ class WaitForGameStart(GameState):
         table.player_index = -1
         table.evenTeamCards = []
         table.oddTeamCards = []
+        table.trump.reset()
 
 class DealCards(GameState):
     def __init__(self):
@@ -143,7 +144,7 @@ class KeepTrumpCard(GameState):
 
 
 class PlayCards(GameState):
-    card_value_list = "J,9,A,1,K,Q,8,7,6".split(",")
+    card_value_priority = "J,9,A,1,K,Q,8,7,6".split(",")
 
     def __init__(self):
         super().__init__([PLAY_CARD, SHOW_TRUMP])
@@ -185,11 +186,37 @@ class PlayCards(GameState):
         return player_index
 
     def assign_cards_to_team(self, table, cards_played):
-        card_type_priority = []
-        # if trump, card_type_priority.append("First charcter")
-        card_type_priority.append("first char of first item")
-        # PlayCards.card_value_list
+        cards_to_consider = self.cards_to_consider(table, cards_played)
+        winner_index = self.high_card_player(table, cards_to_consider)
+        if winner_index % 2 == 0:
+            table.evenTeamCards.extend(list(cards_played.values()))
+        else:
+            table.oddTeamCards.extend(list(cards_played.values()))
+
+        log.info("EVEN TEAM:{}".format(",".join(table.evenTeamCards)))
+        log.info("ODD TEAM:{}".format(",".join(table.oddTeamCards)))
+        return winner_index
+
+    def cards_to_consider(self, table, cards_played):
+        trump_cards = {}
+        same_type_cards = {}
+        first_card = cards_played[next(iter(cards_played))]
 
         for seat_index, card in cards_played.items():
             log.info("{0} played {1}".format(table.seats[seat_index].player.name, card))
-        return next(iter(cards_played))
+            if table.trump.shown and table.trump.card[0] == card[0]:
+                trump_cards[seat_index] = card
+            if first_card[0] == card[0]:
+                same_type_cards[seat_index] = card
+        if len(trump_cards) > 0:
+            return trump_cards
+        return same_type_cards
+
+    def high_card_player(self, table, cards_to_consider):
+        for card_value in PlayCards.card_value_priority:
+            for seat_index, card in cards_to_consider.items():
+                if card_value == card[1]:
+                    log.info("This round goes to {0}: {1}".format(table.seats[seat_index].player.name, card))
+                    return seat_index
+        log.info("No high card, something wrong. {0}: {1}".format(table.seats[seat_index].player.name, table.table_number))
+        return -1

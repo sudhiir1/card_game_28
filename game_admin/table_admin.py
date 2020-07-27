@@ -26,6 +26,15 @@ class Chair:
             chairs.append(Chair(table, i))
         return chairs
 
+class Trump:
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.shown = False
+        self.card = ""
+        self.seat = -1
+
 class TableAdmin:
     def __init__(self, table_number, num_seats):
         self.table_number = table_number
@@ -43,6 +52,7 @@ class TableAdmin:
         self.bid_point = -1
         self.evenTeamCards = []
         self.oddTeamCards = []
+        self.trump = Trump()
 
     def add_player(self, name, conn):
         new_player = player = self.check_returning_player(name)
