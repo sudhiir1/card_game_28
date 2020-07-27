@@ -34,7 +34,7 @@ class TableAdmin:
         self.gamers = {}
         self.game = GameController(self)
         
-        self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
+        self.deck = "SJ,S9,SA,S0,SK,DQ,S8,S7,HJ,H9,HA,H0,HK,HQ,H8,H7,CJ,C9,CA,C0,CK,CQ,C8,C7,DJ,D9,DA,D0,DK,DQ,D8,D7".split(",")
         if num_seats == 6:
             self.deck.append("S6,H6,C6,D6".split(","))
         self.dealer_index = -1
@@ -134,11 +134,6 @@ class TableAdmin:
             return 0
 
         return player_index + 1
-
-    def assign_card_to_team(self, cards_played):
-        for seat_index, card in cards_played.items():
-            log.info("{0} played {1}".format(self.seats[seat_index].player.name, card))
-        return next(iter(cards_played))
 
 
     tables = {}

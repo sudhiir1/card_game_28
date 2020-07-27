@@ -8,11 +8,13 @@ from game_admin.game_player import GamePlayer, PlayerStatus
 log = logging.getLogger(__name__)
 
 class GameState:
-    def __init__(self, cmd):
-        self.cmd = cmd
+    def __init__(self, expected_cmds):
+        self.expected_cmds = expected_cmds
 
-    def setup(self, next_states):
-        return self
+    def expected_command(self, cmd):
+        if cmd in self.expected_cmds:
+            return True
+        return False
 
     def init_game_state(self, table, prev_state):
         pass
@@ -21,12 +23,8 @@ class GameState:
         return None
 
 class WaitForFullTable(GameState):
-    def __init__(self, cmd):
-        super().__init__(cmd)
-
-    def setup(self, next_states):
-        self.wait_start_state = next_states[0]
-        return self
+    def __init__(self):
+        super().__init__([PLAYER_READY])
 
     def init_game_state(self, table, prev_state):
         log.info("Getting ready to accept players")
@@ -37,15 +35,13 @@ class WaitForFullTable(GameState):
         for seat in reversed(table.seats):
             if seat.player is None:
                 log.info("Waiting for full table at Table {0}".format(table.table_number))
-                return self
+                return
 
-        return self.wait_start_state
+        return START_GAME
 
 class WaitForGameStart(GameState):
-
-    def setup(self, next_states):
-        self.deal_state = next_states[0]
-        return self
+    def __init__(self):
+        super().__init__([START_GAME])
 
     def init_game_state(self, table, prev_state):
         log.info("Sending every one to open status popup..")
@@ -57,10 +53,10 @@ class WaitForGameStart(GameState):
         for seat in table.seats:
             if seat.player is None or seat.turn:
                 log.info("Waiting for others to say start")
-                return self
+                return
 
         self.prep_for_new_game(table)
-        return self.deal_state
+        return DEAL_CARDS
 
     def prep_for_new_game(self, table):
         random.shuffle(table.deck)
@@ -71,9 +67,8 @@ class WaitForGameStart(GameState):
         table.oddTeamCards = []
 
 class DealCards(GameState):
-    def setup(self, next_states):
-        self.bidding_state = next_states[0]
-        return self
+    def __init__(self):
+        super().__init__([DEAL_CARDS])
 
     def init_game_state(self, table, prev_state):
         cards_to_deal = 3 if len(table.seats) == 6 else 4
@@ -91,13 +86,12 @@ class DealCards(GameState):
         for seat in table.seats:
             if seat.player is None or seat.turn:
                 log.info("Waiting for others to finish dealing cards")
-                return self
-        return self.bidding_state
+                return
+        return BID_POINTS
 
 class BidPoints(GameState):
-    def setup(self, next_states):
-        self.keep_trump_state = next_states[0]
-        return self
+    def __init__(self):
+        super().__init__([BID_POINTS])
 
     def init_game_state(self, table, prev_state):
         bidder_index = table.bidder_index
@@ -118,10 +112,10 @@ class BidPoints(GameState):
 
         new_bidder_index = table.next_player_index(player.seat)
         if new_bidder_index == table.bidder_index: # any bidding this round, else play
-            return self.keep_trump_state
+            return KEEP_TRUMP
 
         self.send_bidding_message(table, table.seats[new_bidder_index], table.bid_point)
-        return self
+        return
 
     def send_bidding_message(self, table, bidder_seat, bid_point):
         log.info("Inviting {0} for bid from {1} point on table {2}".format(bidder_seat.player.name, bid_point, table.table_number))
@@ -130,10 +124,8 @@ class BidPoints(GameState):
         table.send_everyone("chat", "Waiting for bidding from {0}".format(bidder_seat.player.name))
 
 class KeepTrumpCard(GameState):
-    def setup(self, next_states):
-        self.deal_state = next_states[0]
-        self.play_state = next_states[1]
-        return self
+    def __init__(self):
+        super().__init__([KEEP_TRUMP])
 
     def init_game_state(self, table, prev_state):
         bidder_seat = table.seats[table.bidder_index]
@@ -145,19 +137,17 @@ class KeepTrumpCard(GameState):
         table.seats[player.seat].turn = False
         log.info("{0} kept trump on table {1}".format(player.name, table.table_number))
         if len(table.deck) == 0:
-            return self.play_state
+            return PLAY_CARD
         else:
-            return self.deal_state
+            return DEAL_CARDS
 
 
 class PlayCards(GameState):
-    def __init__(self, cmd):
-        super().__init__(cmd)
-        self.cards_this_round = {}
+    card_value_list = "J,9,A,1,K,Q,8,7,6".split(",")
 
-    def setup(self, next_states):
-        self.wait_start_state = next_states[0]
-        return self
+    def __init__(self):
+        super().__init__([PLAY_CARD, SHOW_TRUMP])
+        self.cards_this_round = {}
 
     def init_game_state(self, table, prev_state):
         play_index = table.player_index
@@ -177,7 +167,7 @@ class PlayCards(GameState):
 
         playing_seat = table.seats[table.player_index]
         self.send_play_message(table, playing_seat)
-        return self
+        return
 
     def send_play_message(self, table, player_seat):
         log.info("Inviting {0} for play a card on table {1}".format(player_seat.player.name, table.table_number))
@@ -189,7 +179,17 @@ class PlayCards(GameState):
         self.cards_this_round[player.seat] = card
         player_index = table.next_player_index(player.seat)
         if len(self.cards_this_round) == len(table.seats):
-            player_index = table.assign_card_to_team(self.cards_this_round)
+            player_index = self.assign_cards_to_team(table, self.cards_this_round)
             self.cards_this_round = {}
 
         return player_index
+
+    def assign_cards_to_team(self, table, cards_played):
+        card_type_priority = []
+        # if trump, card_type_priority.append("First charcter")
+        card_type_priority.append("first char of first item")
+        # PlayCards.card_value_list
+
+        for seat_index, card in cards_played.items():
+            log.info("{0} played {1}".format(table.seats[seat_index].player.name, card))
+        return next(iter(cards_played))

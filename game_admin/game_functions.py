@@ -10,33 +10,31 @@ from game_admin.game_states import *
 log = logging.getLogger(__name__)
 
 class GameController:
-
     def __init__(self, table):
         self.table = table
 
         self.game_states = self.setup_game_states()
-        self.game_state = self.game_states["redy"]
+        self.game_state = self.game_states[PLAYER_READY]
         self.game_state.init_game_state(self.table, None)
 
         self.game_events = self.setup_game_events()
 
     def setup_game_states(self):
-        wait_for_full_table = WaitForFullTable("redy")
-        wait_for_game_start = WaitForGameStart("strt")
-        deal_cards = DealCards("delt")
-        bid_points = BidPoints("bdpt")
-        keep_trump = KeepTrumpCard("trmd")
-        play_cards = PlayCards("card")
+        wait_for_full_table = WaitForFullTable()
+        wait_for_game_start = WaitForGameStart()
+        deal_cards = DealCards()
+        bid_points = BidPoints()
+        keep_trump = KeepTrumpCard()
+        play_cards = PlayCards()
 
         game_states = {
-            "redy": wait_for_full_table.setup([wait_for_game_start]),
-            "strt": wait_for_game_start.setup([deal_cards]),
-            "delt": deal_cards.setup([bid_points]),
-            "bdpt": bid_points.setup([keep_trump]),
-            "trmd": keep_trump.setup([deal_cards, play_cards]),
-            "card": play_cards.setup([wait_for_game_start])
-            # "trmp": WaitForTrumpDown(), # identify trumper | deal, send bid ready (bidder+next) / send round start (dealer+next)
-            # "plyd": WaitForCardPlay(), # record card, send next player / calc high card, assign to team | show status popup
+            PLAYER_READY    : wait_for_full_table,
+            START_GAME      : wait_for_game_start,
+            DEAL_CARDS      : deal_cards,
+            BID_POINTS      : bid_points,
+            KEEP_TRUMP      : keep_trump,
+            PLAY_CARD       : play_cards,
+            SHOW_TRUMP      : play_cards,  
         }
         return game_states
 
@@ -58,13 +56,16 @@ class GameController:
         if not process_state:
             return
 
-        if not self.table.seats[player.seat].turn:
-            log.warn("Ignoring {0} command from {1} as it is not this players turn".format(msg, player.name))
+        if self.game_states.get(cmd) is None:
+            log.warn("Unknown command: {0}  from {1} in Table {2}".format(msg, player.name, self.table.table_number))
             return
 
-        if self.game_states.get(cmd) is not None:
-            if cmd == self.game_state.cmd:
-                return self.play_next(player, msg_arr)
+        if not self.table.seats[player.seat].turn:
+            log.warn("Ignoring {0} command from {1} at Table {2} as it is not this players turn".format(msg, player.name, self.table.table_number))
+            return
+
+        if self.game_state.expected_command(cmd):
+            return self.play_next(player, msg_arr)
 
         log.warn("Unexpected message in Table {0} from {1}. Message: {2}. Expected:{3}".format(self.table.table_number, player.name, msg, self.game_state.cmd))
 
@@ -82,12 +83,16 @@ class GameController:
 
     def play_next(self, player, msg):
         cmd = msg[0]
-        next_game_state = self.game_state.action(self.table, player, msg)
-
-        if next_game_state is self.game_state:
+        next_state_cmd = self.game_state.action(self.table, player, msg)
+        if next_state_cmd is None:
+            return # continuing on same state
+        if self.game_states.get(next_state_cmd) is None:
+            log.warn("Unknown command: {0} from game state. Player is {1} in Table {2}".format(next_state_cmd, player.name, self.table.table_number))
             return
 
-        log.info("Changing state from {0} to {1}".format(self.game_state.cmd, next_game_state.cmd))
+        next_game_state = self.game_states[next_state_cmd]
+
+        log.info("Changing state to {0}".format(next_state_cmd))
         next_game_state.init_game_state(self.table, self.game_state)
         self.game_state = next_game_state
 
