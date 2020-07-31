@@ -14,10 +14,17 @@ active_playing = false;
 my_table = 0;
 my_name = "";
 
+const TurnOptions = {
+    "NOT_MY_TURN": 1, 
+    "PLAY_CARD": 2,
+    "KEEP_TRUMP": 3
+};
+my_turn = TurnOptions.NOT_MY_TURN;
+
 function intializePage(table, num_seats, name) {
     my_table = table;
     my_name = name;
-    addNewCards("");
+    // addNewCards("");
     setup_table(num_seats);
 
     initiate_connection(table, name);
@@ -104,18 +111,35 @@ function allowDrop(event) {
     event.preventDefault();
 }
 
+function addCardsToHand(card_names) {
+    cards = card_names.split(",");
+    myCards = document.getElementById("my_cards");
+    cardCount = myCards.children.length - 1;
+
+    for (var i=0; i<cards.length; i++) {
+        newCard = document.getElementById("card_template").cloneNode(true);
+        newCard.id = "card_" + (cardCount + i + 1)
+        newCard.style.left = "" + ((i + 1) * 5) + "%";
+        newCard.style.zIndex = "1";
+        newCard.style.visibility = "visible";
+        newCard.children[0].innerHTML = cards[i]
+        myCards.appendChild(newCard);
+    }
+}
+
 function addNewCards(cards) {
     myCards = document.getElementById("my_cards");
     cardCount = myCards.children.length - 1;
     //newCardHtml = '<div id="my_card_1" class="my_card_holder my_card_1" onclick="selectMyCard(this)" ondblclick="" ondrop="dropMyCard(event, this)" ondragover="allowDrop(event)"></div>';
 
     //newCard = document.createElement(newCardHtml);
-    newCard = document.getElementById("card_CA").cloneNode(true);
+    newCard = document.getElementById("card_BK").cloneNode(true);
     newCard.id = "card_1"
     newCard.style.left = "5%";
     newCard.style.zIndex = "1";
     newCard.style.visibility = "visible";
     myCards.appendChild(newCard);
+    // newCard.children[0].innerHTML = "BA"
     
     newCard = document.getElementById("card_BK").cloneNode(true);
     newCard.id = "card_2"
@@ -172,9 +196,12 @@ function dragCardClick(event) {
     if (selectedCard == null)
         return;
     if (event.type == "dblclick") {
+        if (my_turn != TurnOptions.PLAY_CARD)
+            return;
         window.clearTimeout(dragCardClickTimeoutId);
         dragCardClickTimeoutId = null;
         putMyCard(selectedCard);
+        my_turn = TurnOptions.NOT_MY_TURN;
     }
     else if (event.type == "click" && dragCardClickTimeoutId == null)
         dragCardClickTimeoutId = setTimeout("selectMyCard(selectedCard); dragCardClickTimeoutId = null;", 500);
@@ -196,9 +223,9 @@ function putMyCard(card) {
     cardCarrier_1.addEventListener("animationstart", listener_animation, false);
     cardCarrier_1.addEventListener("animationend", listener_animation, false);
 
-
-
     cardCarrier_1.classList.toggle("drop_card_anim");
+
+    gameSocket.send("card:" + card.children[0].innerHTML);
 }
 
 function listener_animation(event) {
@@ -241,6 +268,10 @@ function assign_player_to_seat(name, seat_no) {
     seats[player_index].appendChild(new_player);
 
     display_message(`${name} is playing from seat ${seat_no + 1}`);
+}
+
+function keep_trump_card() {
+    gameSocket.send("trmd:");
 }
 
 //---------------------------------------------------------------------------------
@@ -334,6 +365,7 @@ function show_status_popup(game_info) {
 
 function deal_cards(game_info) {
     display_message(`Got cards: ${game_info[1]}. Animate from ${game_info[0]}`)
+    addCardsToHand(game_info[1]);
     gameSocket.send("delt:");
 }
 
@@ -343,11 +375,13 @@ function bid_points(game_info) {
 }
 
 function keep_trump_card(game_info) {
+    my_turn = TurnOptions.KEEP_TRUMP;
     // display_message(`Keeping Trump card`)
     // gameSocket.send("trmd:");
 }
 
 function play_card(game_info) {
+    my_turn = TurnOptions.PLAY_CARD;
     // display_message(`Keeping Trump card`)
     // gameSocket.send("trmd:");
 }

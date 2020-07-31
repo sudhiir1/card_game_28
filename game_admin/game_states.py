@@ -93,8 +93,10 @@ class DealCards(GameState):
 class BidPoints(GameState):
     def __init__(self):
         super().__init__([BID_POINTS])
+        self.bidding_this_round = False
 
     def init_game_state(self, table, prev_state):
+        self.bidding_this_round = False
         bidder_index = table.bidder_index
         if bidder_index == -1:
             bidder_index = table.dealer_index
@@ -107,13 +109,16 @@ class BidPoints(GameState):
         bid_point = int(msg[1])
         table.seats[player.seat].turn = False
         if bid_point != -1:
+            self.bidding_this_round = True
             table.bid_point = bid_point
             table.bidder_index = player.seat
             table.send_everyone("chat", "{0} bid for {1}".format(player.name, bid_point))
 
         new_bidder_index = table.next_player_index(player.seat)
-        if new_bidder_index == table.bidder_index: # any bidding this round, else play
-            return KEEP_TRUMP
+        if new_bidder_index == table.bidder_index:
+            if self.bidding_this_round:
+                return KEEP_TRUMP
+            return PLAY_CARD
 
         self.send_bidding_message(table, table.seats[new_bidder_index], table.bid_point)
         return
@@ -218,5 +223,5 @@ class PlayCards(GameState):
                 if card_value == card[1]:
                     log.info("This round goes to {0}: {1}".format(table.seats[seat_index].player.name, card))
                     return seat_index
-        log.info("No high card, something wrong. {0}: {1}".format(table.seats[seat_index].player.name, table.table_number))
+        log.info("No high card!, something is wrong. {0}: {1}".format(table.seats[seat_index].player.name, table.table_number))
         return -1
