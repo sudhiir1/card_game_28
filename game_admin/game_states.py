@@ -60,9 +60,11 @@ class WaitForGameStart(GameState):
 
     def prep_for_new_game(self, table):
         random.shuffle(table.deck)
-        table.dealer_index = random.randrange(table.num_seats)
+        table.dealer_index = table.get_next_player_index(table.dealer_index)
         table.bidder_index = -1
         table.player_index = -1
+        table.deck.extend(table.evenTeamCards)
+        table.deck.extend(table.oddTeamCards)
         table.evenTeamCards = []
         table.oddTeamCards = []
         table.trump.reset()
@@ -78,7 +80,7 @@ class DealCards(GameState):
 
         deal_index = table.dealer_index
         for i in range(table.num_seats):
-            deal_index = table.next_player_index(deal_index)
+            deal_index = table.get_next_player_index(deal_index)
             table.seats[deal_index].deal_cards(table.deck[:cards_to_deal], i)
             del table.deck[:cards_to_deal]
 
@@ -101,7 +103,7 @@ class BidPoints(GameState):
         if bidder_index == -1:
             bidder_index = table.dealer_index
             table.bid_point = -1
-        bidder_index = table.next_player_index(bidder_index)
+        bidder_index = table.get_next_player_index(bidder_index)
         bidding_seat = table.seats[bidder_index]
         self.send_bidding_message(table, bidding_seat, table.bid_point)
 
@@ -114,7 +116,7 @@ class BidPoints(GameState):
             table.bidder_index = player.seat
             table.send_everyone("chat", "{0} bid for {1}".format(player.name, bid_point))
 
-        new_bidder_index = table.next_player_index(player.seat)
+        new_bidder_index = table.get_next_player_index(player.seat)
         if new_bidder_index == table.bidder_index:
             if self.bidding_this_round:
                 return KEEP_TRUMP
@@ -149,7 +151,7 @@ class KeepTrumpCard(GameState):
 
 
 class PlayCards(GameState):
-    card_value_priority = "J,9,A,1,K,Q,8,7,6".split(",")
+    card_value_priority = "J,9,A,0,K,Q,8,7,6".split(",")
 
     def __init__(self):
         super().__init__([PLAY_CARD, SHOW_TRUMP])
@@ -160,19 +162,25 @@ class PlayCards(GameState):
         if play_index == -1:
             play_index = table.dealer_index
             self.cards_this_round = {}
-        table.player_index = table.next_player_index(play_index)
+        table.player_index = table.get_next_player_index(play_index)
         playing_seat = table.seats[table.player_index]
         self.send_play_message(table, playing_seat)
 
     def action(self, table, player, msg):
-        card = msg[1]
-        table.send_everyone("chat", "{0} played {1}".format(player.name, card))
+        player_seat = table.seats[player.seat]
+        card = player_seat.validate_played_card(msg[1])
+        if card is None:
+            log.info("Unexpected card {0} received from {1} on table {2}. Expecting {3}".format(msg[1], player.name, table.table_number, ",".join(player_seat.cards)))
+        table.send_everyone("plyd", "{0}{1}{2}".format(player.seat, SEP, card))
 
-        table.seats[player.seat].turn = False
-        table.player_index = self.process_card_played(table, player, card)
+        player_seat.turn = False
+        next_player_index, round_over = self.process_card_played(table, player, card)
+        next_player_seat = table.seats[next_player_index]
+        
+        if round_over and len(next_player_seat.cards) == 0:
+            return START_GAME
 
-        playing_seat = table.seats[table.player_index]
-        self.send_play_message(table, playing_seat)
+        self.send_play_message(table, next_player_seat)
         return
 
     def send_play_message(self, table, player_seat):
@@ -183,12 +191,13 @@ class PlayCards(GameState):
 
     def process_card_played(self, table, player, card):
         self.cards_this_round[player.seat] = card
-        player_index = table.next_player_index(player.seat)
         if len(self.cards_this_round) == len(table.seats):
             player_index = self.assign_cards_to_team(table, self.cards_this_round)
             self.cards_this_round = {}
+            table.send_everyone("rdwn", "{0}".format(player_index))
+            return player_index, True
 
-        return player_index
+        return table.get_next_player_index(player.seat), False
 
     def assign_cards_to_team(self, table, cards_played):
         cards_to_consider = self.cards_to_consider(table, cards_played)
@@ -209,7 +218,7 @@ class PlayCards(GameState):
 
         for seat_index, card in cards_played.items():
             log.info("{0} played {1}".format(table.seats[seat_index].player.name, card))
-            if table.trump.shown and table.trump.card[0] == card[0]:
+            if table.trump.shown and table.trump.card[0] == card[0]: # card[0] = card type (first char)
                 trump_cards[seat_index] = card
             if first_card[0] == card[0]:
                 same_type_cards[seat_index] = card
@@ -225,3 +234,4 @@ class PlayCards(GameState):
                     return seat_index
         log.info("No high card!, something is wrong. {0}: {1}".format(table.seats[seat_index].player.name, table.table_number))
         return -1
+

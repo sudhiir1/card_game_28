@@ -25,8 +25,8 @@
                 <div id="pcard_left_down" class="card playing_card"></div>
                 <div id="pcard_right_up" class="card playing_card"></div>
                 <div id="pcard_right_down" class="card playing_card"></div>
-                <div id="trump_card" class="card">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                <div id="trump_holder" class="card playing_card">
+                    <img id="trump_back_img" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
                     <div id="new_messages">
@@ -67,5 +67,9 @@
                 </div>
             </div>
         </div>
+        <div id="bid_window">
+            <div id="bid_-1"  class="bid_button" onclick="bid_button_click(this)">Pass</div>
+        </div>   
     </body>
 </html>
+

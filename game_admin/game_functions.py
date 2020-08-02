@@ -42,8 +42,8 @@ class GameController:
         process_player_join = ProcessPlayerJoin()
         process_player_exit = ProcessPlayerExit()
         game_events = {
-            "newp": process_player_join.setup(self.game_states["redy"]),
-            "byep": process_player_exit.setup(self.game_states["redy"]),
+            "newp": process_player_join.setup(self.game_states[PLAYER_READY]),
+            "byep": process_player_exit.setup(self.game_states[PLAYER_READY]),
         }
         return game_events
 
@@ -67,7 +67,7 @@ class GameController:
         if self.game_state.expected_command(cmd):
             return self.play_next(player, msg_arr)
 
-        log.warn("Unexpected message in Table {0} from {1}. Message: {2}. Expected:{3}".format(self.table.table_number, player.name, msg, self.game_state.cmd))
+        log.warn("Unexpected message in Table {0} from {1}. Message: {2}. State:{3}".format(self.table.table_number, player.name, msg, self.game_state.__class__.__name__))
 
     def process_event(self, player, msg):
         cmd = msg[0]
@@ -145,3 +145,4 @@ def assign_cards_to_high_hand():
 def assign_players_to_team(table):
     log.info("Let us make team")
     return wait_for_players_say_start
+
