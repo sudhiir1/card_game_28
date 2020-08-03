@@ -59,12 +59,10 @@ class WaitForGameStart(GameState):
         return DEAL_CARDS
 
     def prep_for_new_game(self, table):
-        random.shuffle(table.deck)
         table.dealer_index = table.get_next_player_index(table.dealer_index)
         table.bidder_index = -1
         table.player_index = -1
-        table.deck.extend(table.evenTeamCards)
-        table.deck.extend(table.oddTeamCards)
+        table.reset_deck()
         table.evenTeamCards = []
         table.oddTeamCards = []
         table.trump.reset()
@@ -143,7 +141,9 @@ class KeepTrumpCard(GameState):
 
     def action(self, table, player, msg):
         table.seats[player.seat].turn = False
-        log.info("{0} kept trump on table {1}".format(player.name, table.table_number))
+        log.info("{0} kept {1} as trump on table {2}".format(player.name, msg[1], table.table_number))
+        table.trump.card = msg[1]
+        table.trump.seat = player.seat
         if len(table.deck) == 0:
             return PLAY_CARD
         else:
@@ -220,7 +220,7 @@ class PlayCards(GameState):
             log.info("{0} played {1}".format(table.seats[seat_index].player.name, card))
             if table.trump.shown and table.trump.card[0] == card[0]: # card[0] = card type (first char)
                 trump_cards[seat_index] = card
-            if first_card[0] == card[0]:
+            elif first_card[0] == card[0]:
                 same_type_cards[seat_index] = card
         if len(trump_cards) > 0:
             return trump_cards
@@ -234,4 +234,5 @@ class PlayCards(GameState):
                     return seat_index
         log.info("No high card!, something is wrong. {0}: {1}".format(table.seats[seat_index].player.name, table.table_number))
         return -1
+
 

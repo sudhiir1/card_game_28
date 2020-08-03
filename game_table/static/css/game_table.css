@@ -102,8 +102,8 @@ body {
 .card {
     background-color: red;
     position: absolute;
-    width: 10%; /* 45px;60px; */
-    height: 15%; 
+    width: 45px;
+    height: 60px; 
 }
 .playing_card {
     visibility: hidden;
@@ -165,8 +165,8 @@ body {
     background-color: yellow;
     position: absolute;
     top: 20%;
-    width: 10%;
-    height: 80%;
+    /*width: 10%;
+    height: 80%;*/
 }
 #my_drag_card {
     position: absolute;
@@ -267,3 +267,4 @@ body {
     width: 70%;
     height: 10%;
 }
+

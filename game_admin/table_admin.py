@@ -60,6 +60,11 @@ class TableAdmin:
         self.oddTeamCards = []
         self.trump = Trump()
 
+    def reset_deck(self):
+        table.deck.extend(table.evenTeamCards)
+        table.deck.extend(table.oddTeamCards)
+        random.shuffle(self.deck)
+
     def add_player(self, name, conn):
         new_player = player = self.check_returning_player(name)
         
@@ -174,4 +179,5 @@ class TableAdmin:
     #         if not player is this_player:
     #             player.send_message("{}: {}".format(source_name, msg))
     #     log.info("Send except {}: {}: {}".format(this_player.name, source_name, msg))
+
 

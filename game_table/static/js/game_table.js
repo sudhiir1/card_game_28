@@ -151,7 +151,7 @@ function addCardsToHand(card_names) {
     for (var i=0; i<cards.length; i++) {
         newCard = document.getElementById("card_template").cloneNode(true);
         newCard.id = "card_" + (cardCount + i + 1)
-        newCard.style.left = "" + ((cardCount + i + 1) * 5) + "%";
+        newCard.style.left = "" + ((cardCount + i + 1) * 10) + "%";
         newCard.style.zIndex = "" + (i + 1);
         newCard.style.visibility = "visible";
         newCard.children[0].innerHTML = cards[i]
@@ -189,52 +189,47 @@ function dragCardClick(event) {
     if (event.type == "dblclick") {
         window.clearTimeout(dragCardClickTimeoutId);
         dragCardClickTimeoutId = null;
-        // putMyCard(selectedCard);
-        if (my_turn == TurnOptions.KEEP_TRUMP)
-            put_aside_trump_card()
-        if (my_turn == TurnOptions.PLAY_CARD)
-            put_card_in_table()
-        else    
-            return;
-    }
-    else if (event.type == "click" && dragCardClickTimeoutId == null)
-        dragCardClickTimeoutId = setTimeout("selectMyCard(selectedCard); dragCardClickTimeoutId = null;", 500);
 
-//document.getElementById("game_controls").innerHTML += event.type + "\n";
+        if (my_turn != TurnOptions.NOT_MY_TURN)
+            move_out_selected_card()
+        return;
+    }
+    if (event.type == "click" && dragCardClickTimeoutId == null)
+        dragCardClickTimeoutId = setTimeout("selectMyCard(selectedCard); dragCardClickTimeoutId = null;", 500);
 }
 
-function put_aside_trump_card() {
-    trump_holder = document.getElementById("trump_holder");
-    gameSocket.send("trmd:" + selectedCard.children[0].innerHTML);
+function move_out_selected_card() {
     myCards = document.getElementById("my_cards");
-    trump_holder.appendChild(selectedCard);
+    if (my_turn == TurnOptions.KEEP_TRUMP) {
+        target = document.getElementById("trump_holder");
+        cmd = "trmd";
+    }
+    else if (my_turn == TurnOptions.PLAY_CARD) {
+        target = play_cards[0];
+        cmd = "card";
+    }
+    // putMyCard(selectedCard);
+    gameSocket.send(cmd + ":" + selectedCard.children[0].innerHTML);
+    target.appendChild(selectedCard);
     selectMyCard(selectedCard);    
     my_turn = TurnOptions.NOT_MY_TURN;
 }
 
-function put_card_in_table() {
-    gameSocket.send("card:" + selectedCard.children[0].innerHTML);
-    myCards = document.getElementById("my_cards");
-    play_cards[0].appendChild(selectedCard);
-    selectMyCard(selectedCard);
-    my_turn = TurnOptions.NOT_MY_TURN;
-}
-
 function putMyCard(card) {
-// player4Card = document.getElementById("player_4_card");
-//cardImg = player4Card.getElementById("card_img");
+    // player4Card = document.getElementById("player_4_card");
+    //cardImg = player4Card.getElementById("card_img");
 
-// player4Card.removeChild(player4Card.children[0]);
-// player4Card.appendChild(card);
-cardCarrier_1 = document.getElementById("card_carrier_1");
-player4Card = document.getElementById("player_4_card");
-cardCarrier_1.source = card;
-cardCarrier_1.destination = player4Card;
+    // player4Card.removeChild(player4Card.children[0]);
+    // player4Card.appendChild(card);
+    cardCarrier_1 = document.getElementById("card_carrier_1");
+    player4Card = document.getElementById("player_4_card");
+    cardCarrier_1.source = card;
+    cardCarrier_1.destination = player4Card;
 
-cardCarrier_1.addEventListener("animationstart", listener_animation, false);
-cardCarrier_1.addEventListener("animationend", listener_animation, false);
+    cardCarrier_1.addEventListener("animationstart", listener_animation, false);
+    cardCarrier_1.addEventListener("animationend", listener_animation, false);
 
-cardCarrier_1.classList.toggle("drop_card_anim");
+    cardCarrier_1.classList.toggle("drop_card_anim");
 }
 
 function listener_animation(event) {
@@ -280,8 +275,10 @@ function assign_player_to_seat(name, seat_no) {
     display_message(`${name} is playing from seat ${seat_no + 1}`);
 }
 
-function keep_trump_card() {
-    gameSocket.send("trmd:");
+function showTrumpCard(event) {
+    if (my_turn == TurnOptions.NOT_MY_TURN)
+        return;
+    gameSocket.send("shtm:");
 }
 
 //---------------------------------------------------------------------------------
@@ -298,6 +295,7 @@ msg_handlers = {
     "play": play_card,
     "plyd": show_played_card,
     "rdwn": cleanup_round,
+    "tmis": reveal_trump,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -416,5 +414,16 @@ function cleanup_round(game_info) {
 
     for (i=0; i<play_cards.length; i++) {
         play_cards[i].removeChild(play_cards[i].childNodes[0])
+    }
+}
+
+function reveal_trump(game_info) {
+    trump_card = game_info[0];
+    trump_seat = game_info[1];
+    if (trump_seat == my_seat) {
+        trump_holder = document.getElementById("trump_holder");
+        trump_card = trump_holder.children[1].children[0].innerHTML
+        addCardsToHand(trump_card);
+        trump_holder.removeChild(trump_holder.children[1])
     }
 }

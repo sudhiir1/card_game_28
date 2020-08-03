@@ -25,7 +25,7 @@
                 <div id="pcard_left_down" class="card playing_card"></div>
                 <div id="pcard_right_up" class="card playing_card"></div>
                 <div id="pcard_right_down" class="card playing_card"></div>
-                <div id="trump_holder" class="card playing_card">
+                <div id="trump_holder" class="card" ondblclick="showTrumpCard(event)">
                     <img id="trump_back_img" src="{% static "media/playing_card_back.jpg" %}">
                 </div>
                 <div id="game_controls">
@@ -40,13 +40,11 @@
                     </div>
                 </div>                
             </div>
-
-            <div id="my_cards">
+            <div id="my_cards" class="card">
                 <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
             </div>
             <div id="card_carrier_1" class="card card_carrier">
-
             </div>
             <div id="vault" style="display:none;">
                 <div id="playing_card" class="card">
@@ -72,4 +70,5 @@
         </div>   
     </body>
 </html>
+
 

@@ -41,9 +41,12 @@ class GameController:
     def setup_game_events(self):
         process_player_join = ProcessPlayerJoin()
         process_player_exit = ProcessPlayerExit()
+        process_trump_request = ProcessTrumpRequest()
+
         game_events = {
             "newp": process_player_join.setup(self.game_states[PLAYER_READY]),
             "byep": process_player_exit.setup(self.game_states[PLAYER_READY]),
+            SHOW_TRUMP: process_trump_request.setup()
         }
         return game_events
 
@@ -95,54 +98,4 @@ class GameController:
         log.info("Changing state to {0}".format(next_state_cmd))
         next_game_state.init_game_state(self.table, self.game_state)
         self.game_state = next_game_state
-
-
-def wait_for_bidding_request(table, player, msg):
-    #show_bid popup (first bidder)
-
-    return wait_for_bidding_amount
-
-
-def wait_for_bidding_amount(table, player, msg):
-    # broadcast bid amount
-    # if bidders != player next player
-        #return wait_for_bidding_amount(table, player+next player)
-
-    # ask_to_keep_trump_card, bidder
-    return wait_for_trump_card
-
-
-def wait_for_trump_card(table, player, msg):
-    # if any more card to deal
-        # return deal_cards
-    
-    # ask play_hand: dealer+next player
-    return ask_for_play_hand(table.round_starter)
-
-
-def ask_for_play_hand(player):
-    #send message
-
-    return wait_for_play_hand
-
-
-def wait_for_play_hand(table, player, msg):
-    #if player.nextplayer != table.seats[table.round_starter]
-        #return ask_for_play_hand
-
-    return assign_cards_to_high_hand()
-
-
-def assign_cards_to_high_hand():
-    # find high hand and assign to team
-    #if any more card to play
-        # ask play_hand: high hand player
-        # return ask_for_play_hand(table.round_starter)
-
-    return show_game_status_popup()
-
-
-def assign_players_to_team(table):
-    log.info("Let us make team")
-    return wait_for_players_say_start
 

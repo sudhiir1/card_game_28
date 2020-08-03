@@ -36,3 +36,20 @@ class ProcessPlayerExit():
             log.info("Waiting for new player to take {0}'s place at Table {1}".format(player.name, table.table_number))
             return self.wait_full_table, False
         return None, True
+
+class ProcessTrumpRequest():
+    def setup(self):
+        return self
+
+    def action(self, table, player, msg, game_state):
+        player_status = player.status
+        log.info("Processing trump request from {0} at Table {1}".format(player.name, table.table_number))
+
+        if not game_state.expected_command(SHOW_TRUMP) :
+            log.warn("Current state is not expecting showing trump card request. Requested by {0} at table {1}".format(player.name, table.table_number))
+            return None, False
+
+        table.send_everyone("tmis", "{0}{1}{2}".format(table.trump.card, SEP, table.trump.seat))
+        table.trump.shown = True
+        return None, False
+
