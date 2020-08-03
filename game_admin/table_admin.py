@@ -51,7 +51,7 @@ class TableAdmin:
         
         self.deck = "SJ,S9,SA,S0,SK,SQ,S8,S7,HJ,H9,HA,H0,HK,HQ,H8,H7,CJ,C9,CA,C0,CK,CQ,C8,C7,DJ,D9,DA,D0,DK,DQ,D8,D7".split(",")
         if num_seats == 6:
-            self.deck.append("S6,H6,C6,D6".split(","))
+            self.deck.extend("S6,H6,C6,D6".split(","))
         self.dealer_index = random.randrange(num_seats) # todo: also on assign team
         self.player_index = -1
         self.bidder_index = -1
@@ -61,8 +61,8 @@ class TableAdmin:
         self.trump = Trump()
 
     def reset_deck(self):
-        table.deck.extend(table.evenTeamCards)
-        table.deck.extend(table.oddTeamCards)
+        self.deck.extend(self.evenTeamCards)
+        self.deck.extend(self.oddTeamCards)
         random.shuffle(self.deck)
 
     def add_player(self, name, conn):
@@ -179,5 +179,6 @@ class TableAdmin:
     #         if not player is this_player:
     #             player.send_message("{}: {}".format(source_name, msg))
     #     log.info("Send except {}: {}: {}".format(this_player.name, source_name, msg))
+
 
 
