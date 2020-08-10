@@ -38,3 +38,4 @@ def accept_new_connection(query_string, player_conn):
 
     return None
 
+

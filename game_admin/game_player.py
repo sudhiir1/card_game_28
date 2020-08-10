@@ -46,3 +46,4 @@ class GamePlayer:
     def set_inactive(self):
         self.status = PlayerStatus.InActive
         self.send_conn = None
+
