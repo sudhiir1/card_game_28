@@ -2,7 +2,7 @@ ACTIVE_PLAYER = 1;
 NO_SEAT = -1;
 
 selectedCard = null;
-dragStart = 0; 
+dragStart = 0;
 
 total_seats = 0;
 seats = [];
@@ -14,17 +14,50 @@ active_playing = false;
 my_table = 0;
 my_name = "";
 
+bid_window = null;
+
+const TurnOptions = {
+    "NOT_MY_TURN": 1,
+    "PLAY_CARD": 2,
+    "KEEP_TRUMP": 3
+};
+my_turn = TurnOptions.NOT_MY_TURN;
+
 function intializePage(table, num_seats, name) {
     my_table = table;
     my_name = name;
-    //addNewCards("");
+    // addNewCards("");
     setup_table(num_seats);
+    setup_bid_window();
 
     initiate_connection(table, name);
-    /*var my_cards = document.getElementById("my_cards"); 
+    /*var my_cards = document.getElementById("my_cards");
     my_cards.addEventListener("touchstart", dragMyCard, false);
     my_cards.addEventListener("touchend", dropMyCard, false);
     */
+}
+
+function setup_bid_window() {
+    bid_window = document.getElementById("bid_window");
+    bid_pass = document.getElementById("bid_-1");
+    row = 15;
+    column = 15;
+    for (var i=0; i<=14; i++) {
+        newButton = bid_pass.cloneNode(true);
+        newButton.id = "bid_" + (i + 14);
+        newButton.innerHTML = i + 14
+        newButton.style.width = "10%";
+        newButton.style.left = column + "%";
+        newButton.style.top = row + "%";
+        bid_window.appendChild(newButton);
+
+        column += 15;
+        if (column > 80) {
+            row += 20;
+            column = 15;
+        }
+    }
+
 }
 
 function setup_table(num_seats) {
@@ -46,11 +79,16 @@ function setup_table(num_seats) {
     }
 }
 
+function bid_button_click(bid_button) {
+    gameSocket.send("bdpt:" + bid_button.id.substring(4));
+    bid_window.style.visibility = "hidden";
+}
+
 function selectMyCard(card) {
     card.style.top = "0%";
     dragCard = document.getElementById("my_drag_card");
     dragCardShow = "hidden";
-    
+
     if (selectedCard != null)
         selectedCard.style.top = "20%";
     if (selectedCard == card)
@@ -59,6 +97,7 @@ function selectMyCard(card) {
         selectedCard = card;
         dragCardShow = "visible";
         dragCard.style.left = selectedCard.style.left;
+        dragCard.style.width = selectedCard.style.width;
     }
     dragCard.style.visibility = dragCardShow;
 }
@@ -71,19 +110,19 @@ function dropMyCard(event) {
     allowDrop(event);
     if (selectedCard == null)
         return;
-    newNeighborCard = event.target.parentElement;
+    newNeighborCard = event.target;
      
     newPos = parseInt(newNeighborCard.style.left.replace("%", ""));
     oldPos = parseInt(selectedCard.style.left.replace("%", ""));
     newzIndex = newNeighborCard.style.zIndex;
     oldzIndex = selectedCard.style.zIndex;
-    
+
     moveDirection = 1; //1 for left, -1 for right
     if (newzIndex > oldzIndex)
         moveDirection = -1;
-    
+
     cardShiftPos = ((newPos - oldPos)/ (newzIndex - oldzIndex)) * moveDirection;
-                        
+
     var children = newNeighborCard.parentElement.children;
     for (var i = 0; i < children.length; i++) {
       var card = children[i];
@@ -104,67 +143,43 @@ function allowDrop(event) {
     event.preventDefault();
 }
 
+function addCardsToHand(card_names) {
+    cards = card_names.split(",");
+    myCards = document.getElementById("my_cards");
+    cardCount = myCards.children.length - 1;
+
+    for (var i=0; i<cards.length; i++) {
+        newCard = document.getElementById("card_template").cloneNode(true);
+        newCard.id = "card_" + (cardCount + i + 1)
+        newCard.style.left = "" + ((cardCount + i + 1) * 10) + "%";
+        newCard.style.zIndex = "" + (i + 1);
+        newCard.style.visibility = "visible";
+        newCard.children[0].innerHTML = cards[i]
+        myCards.appendChild(newCard);
+    }
+}
+
+function createCard(card_name) {
+    newCard = document.getElementById("card_template").cloneNode(true);
+    newCard.children[0].innerHTML = card_name;
+    newCard.style.visibility = "visible";
+
+    return newCard
+}
+
 function addNewCards(cards) {
     myCards = document.getElementById("my_cards");
     cardCount = myCards.children.length - 1;
     //newCardHtml = '<div id="my_card_1" class="my_card_holder my_card_1" onclick="selectMyCard(this)" ondblclick="" ondrop="dropMyCard(event, this)" ondragover="allowDrop(event)"></div>';
 
     //newCard = document.createElement(newCardHtml);
-    newCard = document.getElementById("card_CA").cloneNode(true);
+    newCard = document.getElementById("card_BK").cloneNode(true);
     newCard.id = "card_1"
     newCard.style.left = "5%";
     newCard.style.zIndex = "1";
     newCard.style.visibility = "visible";
     myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_BK").cloneNode(true);
-    newCard.id = "card_2"
-    newCard.style.left = "15%";
-    newCard.style.zIndex = "2";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_BK").cloneNode(true);
-    newCard.id = "card_3"
-    newCard.style.left = "25%";
-    newCard.style.zIndex = "3";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_BK").cloneNode(true);
-    newCard.id = "card_4"
-    newCard.style.left = "35%";
-    newCard.style.zIndex = "4";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_CA").cloneNode(true);
-    newCard.id = "card_5"
-    newCard.style.left = "45%";
-    newCard.style.zIndex = "5";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_BK").cloneNode(true);
-    newCard.id = "card_6"
-    newCard.style.left = "55%";
-    newCard.style.zIndex = "6";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_CA").cloneNode(true);
-    newCard.id = "card_7"
-    newCard.style.left = "65%";
-    newCard.style.zIndex = "7";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
-    
-    newCard = document.getElementById("card_BK").cloneNode(true);
-    newCard.id = "card_8"
-    newCard.style.left = "75%";
-    newCard.style.zIndex = "8";
-    newCard.style.visibility = "visible";
-    myCards.appendChild(newCard);
+    // newCard.children[0].innerHTML = "BA"
 }
 
 var dragCardClickTimeoutId = null;
@@ -174,54 +189,70 @@ function dragCardClick(event) {
     if (event.type == "dblclick") {
         window.clearTimeout(dragCardClickTimeoutId);
         dragCardClickTimeoutId = null;
-        putMyCard(selectedCard);
+
+        if (my_turn != TurnOptions.NOT_MY_TURN)
+            move_out_selected_card()
+        return;
     }
-    else if (event.type == "click" && dragCardClickTimeoutId == null)
+    if (event.type == "click" && dragCardClickTimeoutId == null)
         dragCardClickTimeoutId = setTimeout("selectMyCard(selectedCard); dragCardClickTimeoutId = null;", 500);
-        
-    //document.getElementById("game_controls").innerHTML += event.type + "\n";
+}
+
+function move_out_selected_card() {
+    myCards = document.getElementById("my_cards");
+    if (my_turn == TurnOptions.KEEP_TRUMP) {
+        target = document.getElementById("trump_holder");
+        cmd = "trmd";
+    }
+    else if (my_turn == TurnOptions.PLAY_CARD) {
+        target = play_cards[0];
+        cmd = "card";
+    }
+    // putMyCard(selectedCard);
+    gameSocket.send(cmd + ":" + selectedCard.children[0].innerHTML);
+    target.appendChild(selectedCard);
+    selectMyCard(selectedCard);    
+    my_turn = TurnOptions.NOT_MY_TURN;
 }
 
 function putMyCard(card) {
     // player4Card = document.getElementById("player_4_card");
     //cardImg = player4Card.getElementById("card_img");
-    
+
     // player4Card.removeChild(player4Card.children[0]);
     // player4Card.appendChild(card);
     cardCarrier_1 = document.getElementById("card_carrier_1");
     player4Card = document.getElementById("player_4_card");
     cardCarrier_1.source = card;
     cardCarrier_1.destination = player4Card;
-    
+
     cardCarrier_1.addEventListener("animationstart", listener_animation, false);
     cardCarrier_1.addEventListener("animationend", listener_animation, false);
-
-
 
     cardCarrier_1.classList.toggle("drop_card_anim");
 }
 
 function listener_animation(event) {
-    switch(event.type) {
-        case "animationstart":
-            cardCarrier_1 = event.target;
-            card = event.target.source;
-            cardCarrier_1.innerHTML = "";
-            cardCarrier_1.appendChild(card.children[0])
-            cardPos = card.getBoundingClientRect()
-            cardCarrier_1.style.top = cardPos.top + "px"
-            cardCarrier_1.style.left = cardPos.left + "px"
-            card.parentElement.removeChild(card)
-            break
-        case "animationend":
-            player4Card = event.target.destination;
-            player4Card.innerHTML = "";
-            player4Card.appendChild(event.target.children[0]);
+switch(event.type) {
+    case "animationstart":
+        cardCarrier_1 = event.target;
+        card = event.target.source;
+        cardCarrier_1.innerHTML = "";
+        cardCarrier_1.appendChild(card.children[0])
+        cardPos = card.getBoundingClientRect()
+        cardCarrier_1.style.top = cardPos.top + "px"
+        cardCarrier_1.style.left = cardPos.left + "px"
+        card.parentElement.removeChild(card)
+        break
+    case "animationend":
+        player4Card = event.target.destination;
+        player4Card.innerHTML = "";
+        player4Card.appendChild(event.target.children[0]);
 
-            //cardCarrier_1 = document.getElementById("card_carrier_1");
-            event.target.classList.toggle("drop_card_anim");
-        break;
-    }
+        //cardCarrier_1 = document.getElementById("card_carrier_1");
+        event.target.classList.toggle("drop_card_anim");
+    break;
+}
 }
 
 function index_from_seat(seat_no) {
@@ -239,8 +270,15 @@ function assign_player_to_seat(name, seat_no) {
     new_player.children["player_name"].innerHTML = name;
 
     seats[player_index].appendChild(new_player);
+    seats[player_index].name = name;
 
     display_message(`${name} is playing from seat ${seat_no + 1}`);
+}
+
+function showTrumpCard(event) {
+    if (my_turn == TurnOptions.NOT_MY_TURN)
+        return;
+    gameSocket.send("shtm:");
 }
 
 //---------------------------------------------------------------------------------
@@ -251,6 +289,13 @@ msg_handlers = {
     "newp": update_new_player,
     "seat": update_players_seating,
     "stat": show_status_popup,
+    "deal": deal_cards,
+    "shbd": bid_points,
+    "ktrm": keep_trump_card,
+    "play": play_card,
+    "plyd": show_played_card,
+    "rdwn": cleanup_round,
+    "tmis": reveal_trump,
 }
 
 function initiate_connection(my_table, my_name) {
@@ -261,12 +306,15 @@ function initiate_connection(my_table, my_name) {
     }
 }
 
-function sendChatMessage() { 
+function sendChatMessage() {
     chat_msg = document.getElementById("chat_input").value;
-    gameSocket.send("chat:" + chat_msg);
+    if (chat_msg[4] == ':')
+        gameSocket.send(chat_msg);
+    else
+        gameSocket.send("chat:" + chat_msg);
     document.getElementById("chat_input").value = "";
 }
-              
+
 function onMessageRecievedSuccess(data) {
     msg_type = data.slice(0, 4);
     if (msg_handlers[msg_type] != null) {
@@ -277,8 +325,10 @@ function onMessageRecievedSuccess(data) {
 }
 
 function display_message(msg) {
-    newMsg = "<span style='color:blue'>Game28:</span> <span style='color:black'>" + msg  + "</span><br>" 
-    document.getElementById("new_messages").innerHTML += newMsg;
+    newMsg = "<span style='color:blue'>Game28:</span> <span style='color:black'>" + msg  + "</span><br>"
+    msg_win = document.getElementById("new_messages")
+    msg_win.innerHTML += newMsg;
+    msg_win.scrollTop = msg_win.scrollHeight;
 }
 
 function save_my_seat(status, seat_no) {
@@ -287,6 +337,7 @@ function save_my_seat(status, seat_no) {
         return;
     active_playing = active;
     my_seat = seat_no;
+    seats[0].name = my_name;
     if (active_playing)
         display_message(`Playing as ${my_name} in seat ${my_seat + 1}`)
     else
@@ -323,4 +374,56 @@ function update_players_seating(seat_info) {
 
 function show_status_popup(game_info) {
     gameSocket.send("strt:");
+}
+
+function deal_cards(game_info) {
+    display_message(`Got cards: ${game_info[1]}. Animate from ${game_info[0]}`)
+    addCardsToHand(game_info[1]);
+    gameSocket.send("delt:");
+}
+
+function bid_points(game_info) {
+    //todo: disable buttons
+    bid_window.style.visibility = "visible";
+    //display_message(`Bidding ${parseInt(game_info[0]) + 1} points`)
+    //gameSocket.send("bdpt:" + (parseInt(game_info[0]) + 1));
+}
+
+function keep_trump_card(game_info) {
+    my_turn = TurnOptions.KEEP_TRUMP;
+    // display_message(`Keeping Trump card`)
+    // gameSocket.send("trmd:");
+}
+
+function play_card(game_info) {
+    my_turn = TurnOptions.PLAY_CARD;
+    // display_message(`Keeping Trump card`)
+    // gameSocket.send("trmd:");
+}
+
+function show_played_card(game_info) {
+    seat_no = index_from_seat(parseInt(game_info[0]))
+    // display_message(`${seats[seat_no].name} played ${game_info[1]} card`)
+    if(seat_no != 0) //my seat
+        play_cards[seat_no].appendChild(createCard(game_info[1]))
+}
+
+function cleanup_round(game_info) {
+    seat_no = index_from_seat(parseInt(game_info[0]))
+    display_message(`This round goes to ${seats[seat_no].name}`)
+
+    for (i=0; i<play_cards.length; i++) {
+        play_cards[i].removeChild(play_cards[i].childNodes[0])
+    }
+}
+
+function reveal_trump(game_info) {
+    trump_card = game_info[0];
+    trump_seat = game_info[1];
+    if (trump_seat == my_seat) {
+        trump_holder = document.getElementById("trump_holder");
+        trump_card = trump_holder.children[1].children[0].innerHTML
+        addCardsToHand(trump_card);
+        trump_holder.removeChild(trump_holder.children[1])
+    }
 }

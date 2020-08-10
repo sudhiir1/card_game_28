@@ -1,8 +1,10 @@
 import logging
 import asyncio
 from game_admin.table_admin import TableAdmin
+from game_admin.common import *
 
 log = logging.getLogger(__name__)
+
 
 async def websocket_application(scope, receive, send):
     while True:
@@ -14,11 +16,13 @@ async def websocket_application(scope, receive, send):
                 break
 
         elif event['type'] == 'websocket.disconnect':
-            player.table.say_goodbye(player)
+            if event['code'] != 1006:
+                player.table.process_new_message(player, "{0}{1}".format("byep", SEP))
             break
 
         elif event['type'] == 'websocket.receive':
             player.table.process_new_message(player, event['text'])
+
 
 def accept_new_connection(query_string, player_conn):
     player_info_list = query_string.decode().replace('&', '=').split('=')
@@ -33,4 +37,5 @@ def accept_new_connection(query_string, player_conn):
         return TableAdmin.accept_player(player_info_dict["table"], player_info_dict["player"], player_conn)
 
     return None
+
 

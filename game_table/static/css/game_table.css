@@ -27,8 +27,14 @@ body {
     width: 99.9%;
     height: 30%;
     overflow-x: hidden;
-    overflow-y: auto; 
+    overflow-y: hidden; 
     z-index: 15;
+}
+#new_messages {
+    width: 99.9%;
+    height: 75%;
+    overflow-x: hidden;
+    overflow-y: auto; 
 }
 .player {
     /* position: absolute; */
@@ -97,7 +103,7 @@ body {
     background-color: red;
     position: absolute;
     width: 45px;
-    height: 60px;
+    height: 60px; 
 }
 .playing_card {
     visibility: hidden;
@@ -105,6 +111,7 @@ body {
 #pcard_facing {
     left: 45%;
     top: 5%;
+    transform: rotate(180deg);
 }
 #pcard_right_up {
     left: 65%;
@@ -140,7 +147,7 @@ body {
     top: 23%;
     transform: rotate(90deg);
 }
-#trump_card {
+#trump_holder {
     position: absolute;
     left: 7%;
     top: 87%;
@@ -158,6 +165,8 @@ body {
     background-color: yellow;
     position: absolute;
     top: 20%;
+    /*width: 10%;
+    height: 80%;*/
 }
 #my_drag_card {
     position: absolute;
@@ -165,7 +174,7 @@ body {
     border: 2px solid red;
     visibility: hidden;
     position: absolute;
-    width: 20%;
+    width: 10%;
     height: 80%;
     top: 0%;
     z-index: 10;
@@ -234,3 +243,28 @@ body {
         top: 40%; 
     }
 }
+#bid_window {
+    background-color: rgb(111, 52, 206);
+    border-radius: 30px;
+    position: absolute;
+    left: 10%;
+    top:  30%;
+    width: 80%;
+    height: 40%;
+    z-index: 5;
+    visibility: hidden;
+}
+.bid_button {
+    border: 2px solid rgb(176, 236, 9);
+    background-color: rgb(56, 63, 36);
+    border-radius: 30px;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 15%;
+    top:  75%;
+    width: 70%;
+    height: 10%;
+}
+

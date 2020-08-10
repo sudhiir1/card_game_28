@@ -7,55 +7,106 @@ from game_admin.game_functions  import GameController
 
 log = logging.getLogger(__name__)
 
+class Chair:
+    def __init__(self, table, seat_no):
+        self.table = table
+        self.seat_no = seat_no
+        self.player = None
+        self.turn = False
+        self.cards = []
+
+    def deal_cards(self, cards, deal_pos):
+        self.cards.extend(cards)
+        self.player.send_message("deal{0}{1}{2}{3}".format(SEP, deal_pos, SEP, ",".join(cards)))
+
+    def validate_played_card(self, card):
+        if card not in self.cards:
+            return None
+        self.cards.remove(card)
+        return card
+
+    @classmethod
+    def addChairs(cls, table, num_chairs):
+        chairs = []
+        for i in range(num_chairs):
+            chairs.append(Chair(table, i))
+        return chairs
+
+class Trump:
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.shown = False
+        self.card = ""
+        self.seat = -1
+
 class TableAdmin:
-
-    tables = {}
-
     def __init__(self, table_number, num_seats):
         self.table_number = table_number
-        self.players = {}
-        self.seats = [None] * num_seats
+        self.num_seats = num_seats
+        self.seats = Chair.addChairs(self, num_seats)
+        self.gamers = {}
         self.game = GameController(self)
         
-        self.deck = "SJ,S9,SA,S1,SK,DQ,S8,S7,HJ,H9,HA,H1,HK,HQ,H8,H7,CJ,C9,CA,C1,CK,CQ,C8,C7,DJ,D9,DA,D1,DK,DQ,D8,D7".split(",")
+        self.deck = "SJ,S9,SA,S0,SK,SQ,S8,S7,HJ,H9,HA,H0,HK,HQ,H8,H7,CJ,C9,CA,C0,CK,CQ,C8,C7,DJ,D9,DA,D0,DK,DQ,D8,D7".split(",")
         if num_seats == 6:
-            self.deck.append("S6,H6,C6,D6".split(","))
-        self.dealer_index = random.randrange(num_seats)
-        self.round_start_index = self.next_player_index(self.dealer_index)
-        self.bidder = None
-        self.trump_card = None
-        self.game_status = GameStatus.GameWaiting
+            self.deck.extend("S6,H6,C6,D6".split(","))
+        self.dealer_index = random.randrange(num_seats) # todo: also on assign team
+        self.player_index = -1
+        self.bidder_index = -1
+        self.bid_point = -1
+        self.evenTeamCards = []
+        self.oddTeamCards = []
+        self.trump = Trump()
 
-    def add_player(self, player_name, player_conn):
-        new_player = None
-        if not self.players.get(player_name) is None:
-            if  self.players[player_name].status != PlayerStatus.InActive:
-                log.warn("One {} already playing in table_{}".format(player_name, self.table_number))
-                return None # Todo: accept connection, send error and close connection/redirect
-            else:
-                log.info("{} joining back".format(player_name))
-                new_player = self.players[player_name]
-        else:
-            log.info("{} is new to the table".format(player_name))
-            new_player = GamePlayer(player_name, self)
+    def reset_deck(self):
+        self.deck.extend(self.evenTeamCards)
+        self.deck.extend(self.oddTeamCards)
+        random.shuffle(self.deck)
+
+    def add_player(self, name, conn):
+        new_player = player = self.check_returning_player(name)
+        
+        if new_player is None:
+            log.info("{} is new to the table".format(name))
+            new_player = GamePlayer(name, self)
 
         seat_no, player_status = self.assign_seat(new_player)
-        new_player.accept_connection(player_conn, seat_no, player_status)
+        new_player.accept_connection(conn, seat_no, player_status)
 
-        log.info("Adding player to seat {} of the table_{}. Welcome {}".format(seat_no, self.table_number, player_name))
-        self.send_everyone("newp", "{0}{1}{2}{3}{4}".format(player_name, SEP, player_status.value, SEP, seat_no))
-
-        self.send_current_players_info(new_player)
-
-        # self.game.process_message(new_player, "{0}{1}".format("redy", SEP))
+        self.process_new_message(new_player, "{0}{1}{2}".format("newp", SEP, int(player is None)))
      
         return new_player
 
+    def check_returning_player(self, name):
+        if self.gamers.get(name) is None:
+            return None
+        if  self.gamers[name].status != PlayerStatus.InActive:
+            log.warn("One {} already playing in table_{}".format(name, self.table_number))
+            return None # Todo: accept connection, send error and close connection/redirect
+
+        log.info("{} joining back".format(name))
+        return self.gamers[name]
+
+    def assign_seat(self, player):
+        if not self.gamers.get(player.name) is None and self.seats[player.seat].player is None:
+            log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
+            self.seats[player.seat].player = player
+            return player.seat, PlayerStatus.Active
+
+        self.gamers[player.name] = player
+        for i in range(len(self.seats)):
+            if self.seats[i].player is None:
+                self.seats[i].player = player
+                return i, PlayerStatus.Active
+        return NO_SEAT, PlayerStatus.Spectator
+        
     def send_current_players_info(self, to_player):
         player_info = ""
         for i in range(len(self.seats)):
-            if not self.seats[i] is None:
-                player = self.seats[i]
+            if not self.seats[i].player is None:
+                player = self.seats[i].player
                 player_info += "{0}{1}{2}{3}{4}{5}".format(SEP, player.name, SEP, player.status.value, SEP, i)
         if player_info != "":
             to_player.send_message("seat" + player_info)
@@ -70,36 +121,25 @@ class TableAdmin:
             return
         self.send_everyone("byep", "{0}{1}{2}".format(leaving_player.name, SEP, leaving_player.seat))
 
-        self.game.process_message(leaving_player, "{0}{1}".format("byep", SEP))
-
     def send_everyone(self, msg_type, msg):
-        for _, player in self.players.items():
+        for _, player in self.gamers.items():
             if player.status != PlayerStatus.InActive:
-                player.send_message("{0}{1}{2}".format(msg_type, SEP, msg))
-        log.info("Sent: {}:{}".format(msg_type, msg))
+                player.send_message("{0}{1}{2}".format(msg_type, SEP, msg), False)
+        log.info("Sent Everyone: {}:{}".format(msg_type, msg))
 
-    def assign_seat(self, player):
-        if not self.players.get(player.name) is None and self.seats[player.seat] is None:
-            log.info("Assigning {0} to seat number {1}".format(player.name, player.seat))
-            self.seats[player.seat] = player
-            return player.seat, PlayerStatus.Active
+    def set_everyones_turn(self, enable):
+        for seat in self.seats:
+            seat.turn = enable
 
-        self.players[player.name] = player
-        for i in range(len(self.seats)):
-            if self.seats[i] is None:
-                self.seats[i] = player
-                return i, PlayerStatus.Active
-        return NO_SEAT, PlayerStatus.Spectator
 
     def remove_player(self, leaving_player):
-        # self.players.pop(leaving_player.name)
         leaving_player.set_inactive()
 
         if leaving_player.seat != NO_SEAT:
-            self.seats[leaving_player.seat] = None
+            self.seats[leaving_player.seat].player = None
 
     def check_anyone_playing(self):
-        for _, player in self.players.items():
+        for _, player in self.gamers.items():
             if player.status != PlayerStatus.InActive:
                 return True
         return False
@@ -110,16 +150,14 @@ class TableAdmin:
         else:
             self.game.process_message(player, msg)
 
-    def set_players_turn(self, enable):
-        for seat in self.seats:
-            seat.turn = enable
-
-    def next_player_index(self, player_index):
+    def get_next_player_index(self, player_index):
         if player_index == len(self.seats) - 1:
             return 0
 
         return player_index + 1
 
+
+    tables = {}
     @classmethod
     def accept_player(cls, table_number, player_name, player_conn):
         table_number = int(table_number)
@@ -137,7 +175,10 @@ class TableAdmin:
 
 
     # def send_everyone_except(self, this_player, source_name, msg):
-    #     for id, player in self.players.items():
+    #     for id, player in self.gamers.items():
     #         if not player is this_player:
     #             player.send_message("{}: {}".format(source_name, msg))
     #     log.info("Send except {}: {}: {}".format(this_player.name, source_name, msg))
+
+
+
