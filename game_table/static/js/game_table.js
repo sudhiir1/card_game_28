@@ -110,7 +110,7 @@ function dropMyCard(event) {
     allowDrop(event);
     if (selectedCard == null)
         return;
-    newNeighborCard = event.target.parentElement;
+    newNeighborCard = event.target;
      
     newPos = parseInt(newNeighborCard.style.left.replace("%", ""));
     oldPos = parseInt(selectedCard.style.left.replace("%", ""));
