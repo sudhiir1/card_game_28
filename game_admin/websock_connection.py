@@ -5,6 +5,7 @@ from game_admin.common import *
 
 log = logging.getLogger(__name__)
 
+
 async def websocket_application(scope, receive, send):
     while True:
         event = await receive()
@@ -15,7 +16,8 @@ async def websocket_application(scope, receive, send):
                 break
 
         elif event['type'] == 'websocket.disconnect':
-            player.table.process_new_message(player, "{0}{1}".format("byep", SEP))
+            if event['code'] != 1006:
+                player.table.process_new_message(player, "{0}{1}".format("byep", SEP))
             break
 
         elif event['type'] == 'websocket.receive':
