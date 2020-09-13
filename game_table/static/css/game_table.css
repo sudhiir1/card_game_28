@@ -1,20 +1,21 @@
 body {
-    margin: 0;
+    max-width: 500px;
+    max-height: 900px;
+    margin: auto;
 }
 #game_room {
-    position: absolute;
-    left: 0%;
-    top:  0%;
+    position: relative;
+    align-content: center;
+    top: 0%;
     width: 100%;
     height: 100%;
     z-index: 5;
+    background-color: black;
 }
 #game_table {
-    border: 2px solid #8b2;
-    border-radius: 30px;
     position: absolute;
+    top:  5%;
     left: 10%;
-    top:  10%;
     width: 80%;
     height: 80%;
     z-index: 10;
@@ -22,82 +23,116 @@ body {
 #game_controls {
     background-color: rgb(94, 47, 47); 
     position: absolute;
-    left: 0%;
-    top: 55%;
-    width: 99.9%;
-    height: 30%;
+    left: -325px;
+    top: 0px;
+    width: 65%;
+    height: 55%;
     overflow-x: hidden;
     overflow-y: hidden; 
     z-index: 15;
 }
 #new_messages {
     width: 99.9%;
-    height: 75%;
+    height: 70%;
     overflow-x: hidden;
     overflow-y: auto; 
 }
 .player {
-    /* position: absolute; */
+    position: absolute;
 }
 .player_photo {
     border-radius: 50%;
-    position: absolute;
+    position: relative;
     width: 100%;
     height: 100%
 }
 .player_text {
     position: absolute;
-    left: 0%;
-    top: 80%;
     width: 100%;
     text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.player1 {
+    position: absolute;
+    left: 80%;
+    top: 0%;
+    width: 15%;
+    height: 10%;
+}
+.player1_img {
+    border: 3px solid greenyellow;
+    border-radius: 50%;
+    position: relative;
+    top: 35%;
+    animation: mymove 2s infinite;
+}
+@keyframes mymove {
+    50% {box-shadow: 0 0 50px greenyellow;}
+  }
+.player_photo1 {
+    border-radius: 50%;
+    width: 100%;
+    height: 80%;
+}
+.player_text1 {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    top: 0%;
 }
 .seat {
-    background-color: darkgray;
     position: absolute;
     border-radius: 50%;
     width: 15%;
     height: 10%;
     z-index: 25;
     visibility: hidden;
+    background-color: transparent;
 }
 .seat_photo {
-    background-image: url('/static/media/anonymous.jpg');
+    background: url('../media/anonymous.png');
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
+    background-color: white;
 }
 #seat_mine {
-    left: 45%;
-    top: 83%;
+    left: 42.5%;
+    top: 90%;
 }
 #seat_facing {
-    left: 45%;
+    left: 42.5%;
     top: 2%;
 }
 #seat_right_up {
     left: 85%;
-    top: 15%;
+    top: 27.5%;
 }
 #seat_right_down {
     left: 85%;
-    top: 40%;
+    top: 67.5%;
 }
 #seat_left_down {
     left: 0%;
-    top: 40%;
+    top: 67.5%;
 }
 #seat_left_up {
     left: 0%;
-    top: 15%;
+    top: 27.5%;
 }
 #seat_right {
     left: 85%;
-    top: 27%;
+    top: 42.5%;
 }
 #seat_left {
     left: 0%;
-    top: 27%;
+    top: 42.5%;
 }
 .card {
     background-color: red;
@@ -109,54 +144,56 @@ body {
     visibility: hidden;
 }
 #pcard_facing {
-    left: 45%;
-    top: 5%;
+    left: 44.5%;
+    top: 22.5%;
     transform: rotate(180deg);
 }
 #pcard_right_up {
-    left: 65%;
-    top: 15%;
+    left: 72.5%;
+    top: 30%;
     transform: rotate(60deg);
 }
 #pcard_right_down {
-    left: 65%;
-    top: 30%;
+    left: 72.5%;
+    top: 45%;
     transform: rotate(120deg);
 }
 #pcard_mine {
-    left: 45%;
-    top: 40%;
+    left: 44.5%;
+    top: 72.5%;
 }
 #pcard_left_down {
-    left: 25%;
-    top: 30%;
+    left: 15%;
+    top: 45%;
     transform: rotate(240deg);
 }
 #pcard_left_up {
-    left: 25%;
-    top: 15%;
+    left: 15%;
+    top: 30%;
     transform: rotate(300deg);
 }
 #pcard_left {
-    left: 25%;
-    top: 23%;
+    left: 15%;
+    top: 47.5%;
     transform: rotate(90deg);
 }
 #pcard_right {
-    left: 65%;
-    top: 23%;
+    left: 72.5%;
+    top: 47.5%;
     transform: rotate(90deg);
 }
 #trump_holder {
     position: absolute;
     left: 7%;
     top: 87%;
+    color: tomato;
 }
+
 #my_cards {
     background-color: blue;
     position: absolute;
     left: 35%;
-    top: 83%;
+    top: 78%;
     width: 50%;
     height: 10%;
     z-index: 25;

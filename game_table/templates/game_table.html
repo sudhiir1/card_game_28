@@ -1,12 +1,16 @@
-{% load static %}
 <html>
     <head>
         <title>CardGame28</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <link rel="stylesheet" type="text/css" href="{% static 'css/game_table.css' %}"/>
-        <script type="text/javascript" src="{% static 'js/game_table.js' %}"> </script>
+    
+        <!--Import materialize.css-->
+        <link type="text/css" rel="stylesheet" href="../static/css/materialize.min.css"  media="screen,projection"/>
+        <link rel="stylesheet" type="text/css" href="../static/css/game_table.css"/>
+        <script type="text/javascript" src="../static/js/game_table.js"> </script>
+        <!--Import Google Icon Font-->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     </head>
-    <body oncontextmenu="return false;" onload="intializePage('{{ table_number }}', '{{ seats }}', '{{ player_name }}');">
+    <body oncontextmenu="return false;" onload="intializePage('1', '4', 'Tari');">
         <div id="game_room">
             <div id="seat_mine" class="seat seat_photo"></div>
             <div id="seat_facing" class="seat seat_photo"></div>
@@ -17,6 +21,7 @@
             <div id="seat_right_up" class="seat seat_photo"></div>
             <div id="seat_right_down" class="seat seat_photo"></div>
             <div id="game_table">
+                <img id="game_table_img" class="materialboxed" width="99%" height="" src="../static/media/game_table.jpg" >
                 <div id="pcard_mine" class="card playing_card"></div>
                 <div id="pcard_facing" class="card playing_card"></div>
                 <div id="pcard_left" class="card playing_card"></div>
@@ -25,21 +30,19 @@
                 <div id="pcard_left_down" class="card playing_card"></div>
                 <div id="pcard_right_up" class="card playing_card"></div>
                 <div id="pcard_right_down" class="card playing_card"></div>
-                <div id="trump_holder" class="card" ondblclick="showTrumpCard(event)">
-                    <img id="trump_back_img" src="{% static "media/playing_card_back.jpg" %}">
-                </div>
-                <div id="game_controls">
-                    <div id="new_messages">
-                        <span style="color:blue">Game28:</span> <span style="color:gray">Waiting for other player to join...</span><br>
-                    </div><br>
-                    <div>
-                        <form onsubmit="sendChatMessage(); return false;">
-                            <input type="text" id="chat_input"> 
-                            <input type="submit" value="Send">
-                        </form>    
-                    </div>
-                </div>                
+                <div id="trump_holder" class="card" ondblclick="showTrumpCard(event)"></div>             
             </div>
+            <div id="game_controls" class="card-panel teal lighten-2">
+                <p>Waiting for other player!</p>
+                <div id="new_messages">
+                </div><br>
+                <div>
+                    <form onsubmit="sendChatMessage(); return false;">
+                        <input type="text" id="chat_input"> 
+                        <input type="submit" value="Send">
+                    </form>    
+                </div>
+            </div>   
             <div id="my_cards" class="card">
                 <div id="my_drag_card" draggable="true" onclick="dragCardClick(event)" ondblclick="dragCardClick(event)" ondragstart="dragMyCard(event)">
                 </div>
@@ -48,26 +51,33 @@
             </div>
             <div id="vault" style="display:none;">
                 <div id="playing_card" class="card">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_heads" src="../static/media/playing_card_back.jpg">
                 </div>
-                    <div id="player_template" class="player">
-                    <img id="player_img" class="player_photo" src="{% static "media/anonymous.jpg" %}" alt="Player avatar">
+                <div id="player_template" class="player">
                     <div id="player_name" class="player_text">Player</div>
                 </div>
                 <div id="card_BK" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/playing_card_back.jpg" %}">
+                    <img id="card_img" class="playing_card_heads" src="../static/media/playing_card_back.jpg">
                 </div>
                 <div id="card_CA" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
-                    <img id="card_img" class="playing_card_heads" src="{% static "media/CA.png" %}">
+                    <img id="card_img" class="playing_card_heads" src="../static/media/CA.png">
                 </div>
                 <div id="card_template" class="card my_card_holder card_template" onclick="selectMyCard(this)" ondrop="dropMyCard(event)" ondragover="allowDrop(event)">
                     <div id="card_text"></div>
                 </div>
             </div>
+            <div id="player_template" class="player1">
+                <div id="player1_img" class="player1_img">
+                    <img id="player_photo" class="player_photo1" src="../static/media/anonymous.png"></img>
+                </div>                
+                <div id="player_name" class="player_text1">Player</div>
+            </div>
         </div>
         <div id="bid_window">
             <div id="bid_-1"  class="bid_button" onclick="bid_button_click(this)">Pass</div>
         </div>   
+         <!--JavaScript at end of body for optimized loading-->
+        <script type="text/javascript" src="../static/js/materialize.min.js"></script>
     </body>
 </html>
 

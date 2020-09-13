@@ -110,7 +110,7 @@ function dropMyCard(event) {
     allowDrop(event);
     if (selectedCard == null)
         return;
-    newNeighborCard = event.target;
+    newNeighborCard = event.target; //.parentElement;
      
     newPos = parseInt(newNeighborCard.style.left.replace("%", ""));
     oldPos = parseInt(selectedCard.style.left.replace("%", ""));
@@ -298,17 +298,33 @@ msg_handlers = {
     "tmis": reveal_trump,
 }
 
+class WebSocket_Mock{
+    send(msg){
+        display_message(msg);
+    }
+}
+
 function initiate_connection(my_table, my_name) {
+    gameSocket = new WebSocket_Mock();
+    return;
     gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000?player=" + my_name + "&table=" + my_table);
 
     gameSocket.onmessage = function (event) {
         onMessageRecievedSuccess(event.data);
     }
 }
-
+//newp:Tari:1:0
+//seat:Tari:1:0:Achu:1:1:Shalini:1:2:Sudheer:1:3
+//byep:Sudheer:3
+//deal:3:S0,H0,DJ,DA
+//shbd:-1
+//play:
+//plyd:2:S0
 function sendChatMessage() {
     chat_msg = document.getElementById("chat_input").value;
-    if (chat_msg[4] == ':')
+    if (chat_msg[0] == ":")
+        onMessageRecievedSuccess(chat_msg.substring(1));
+    else if (chat_msg[4] == ':')
         gameSocket.send(chat_msg);
     else
         gameSocket.send("chat:" + chat_msg);
