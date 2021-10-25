@@ -23,3 +23,13 @@ git clone https://github.com/sudhiir1/card_game_28.git
 cd card_game_28
 
 pip3 install -r requirements.txt
+  
+## Run Server
+cd ~/card_game_28/django/card_game_28
+
+source ../env/bin/activate
+
+uvicorn card_game_28.asgi:application --host $(ec2metadata --public-hostname)
+
+## Play Game
+http://cardgame28.com:8000/play?table=1
