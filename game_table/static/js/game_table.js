@@ -299,7 +299,7 @@ msg_handlers = {
 }
 
 function initiate_connection(my_table, my_name) {
-    gameSocket = new WebSocket("ws://ec2-3-134-97-118.us-east-2.compute.amazonaws.com:8000?player=" + my_name + "&table=" + my_table);
+    gameSocket = new WebSocket("ws://cardgame28.com:8000?player=" + my_name + "&table=" + my_table);
 
     gameSocket.onmessage = function (event) {
         onMessageRecievedSuccess(event.data);
